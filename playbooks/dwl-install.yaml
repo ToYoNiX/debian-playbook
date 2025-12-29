@@ -1,0 +1,74 @@
+- name: Install ToYoNiX's DWL Build
+  hosts: PCs
+  vars:
+    dependencies:
+      - git
+      - cmake
+      - meson
+      - ninja-build
+      - libwayland-dev
+      - libxkbcommon-dev
+      - libseat-dev
+      - libinput-dev
+      - libdrm-dev
+      - libgbm-dev
+      - libpixman-1-dev
+      - liblcms2-dev
+      - libxcb-render0-dev
+      - libxcb-shape0-dev
+      - libxcb-xfixes0-dev
+      - libxcb-sync-dev
+      - libxcb-damage0-dev
+      - libxcb-glx0-dev
+      - libxcb-composite0-dev
+      - libepoxy-dev
+      - libxcb-present-dev
+      - libxcb-icccm4-dev
+      - libxcb-xinput-dev
+      - libxcb-res0-dev
+      - libxcb-render-util0-dev
+      - libxcb-dri3-dev
+      - libdisplay-info-dev
+      - libliftoff-dev
+      - libxcb-ewmh-dev
+      - libxcb-shm0-dev
+      - libcap-dev
+      - libsystemd-dev
+      - libvulkan-dev
+      - libx11-xcb-dev
+      - libxcb-image0-dev
+      - libegl1-mesa-dev
+      - libgles2-mesa-dev
+      - wayland-protocols
+      - libwlroots-0.18-dev
+      - libfcft-dev
+      - libdbus-1-dev
+      - xwayland
+
+  tasks:
+    - debug:
+        var: ansible_user_id
+
+    - name: Create a folder in the home directory (Just for organization)
+      ansible.builtin.file:
+        path: /home/{{ ansible_user_id }}/Git/
+        state: directory
+        mode: '0775'
+
+    - name: Grab the build
+      ansible.builtin.git:
+        repo: https://github.com/ToYoNiX/dwl
+        dest: /home/{{ ansible_user_id }}/Git/dwl
+
+    - name: Install dependencies
+      become: yes
+      ansible.builtin.apt:
+        name: "{{ dependencies }}"
+        state: latest
+
+    - name: Compile and install the build
+      command: sudo make clean install
+      become: yes
+      args:
+        chdir: /home/{{ ansible_user_id }}/Git/dwl
+ 
