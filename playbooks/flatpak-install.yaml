@@ -1,0 +1,24 @@
+- name: Flatpak install with apps
+  hosts: PCs
+  vars:
+    apps:
+      - app.zen_browser.zen
+      - md.obsidian.Obsidian
+      - com.obsproject.Studio
+
+  tasks:
+    - name: Install Flatpak
+      become: yes
+      ansible.builtin.apt:
+        name: flatpak
+        state: latest
+    
+    - name: Add Flathub Repo
+      become: yes
+      command: flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+    - name: Install Apps
+      become: yes
+      community.general.flatpak:
+        name: "{{ apps }}"
+        state: latest
