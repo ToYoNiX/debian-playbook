@@ -44,9 +44,8 @@
       - libfcft-dev
       - libdbus-1-dev
       - xwayland
-      - j4-dmenu-desktop
       - foot
-      - wmenu
+      - fuzzel
 
   tasks:
     - debug:
