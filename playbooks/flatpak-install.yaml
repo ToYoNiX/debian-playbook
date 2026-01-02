@@ -5,6 +5,8 @@
       - app.zen_browser.zen
       - md.obsidian.Obsidian
       - com.obsproject.Studio
+      - com.valvesoftware.Steam
+      - us.zoom.Zoom
 
   tasks:
     - name: Install Flatpak
