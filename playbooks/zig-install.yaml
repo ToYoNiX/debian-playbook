@@ -1,0 +1,49 @@
+- name: Install zig lang
+  hosts: PCs
+  vars:
+    zig_version: "zig-x86_64-linux-0.15.2"
+    zig_url: "https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz"
+    zig_path: "/usr/local/zig"
+    zig_bin_path: "/usr/local/bin/zig"
+
+  tasks:
+    - name: Creating temp directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: temp_dir
+
+    - name: Grabbing zig binaries
+      ansible.builtin.get_url:
+        url: "{{ zig_url }}"
+        dest: "{{ temp_dir.path }}/"
+
+    - name: Decompressing binaries
+      ansible.builtin.unarchive:
+        remote_src: yes
+        src: "{{ temp_dir.path }}/{{ zig_version }}.tar.xz"
+        dest: "{{ temp_dir.path }}"
+
+    - name: Creating {{ zig_path }}
+      become: yes
+      ansible.builtin.file:
+        path: "{{ zig_path }}"
+        state: directory
+
+    - name: Moving binaries into {{ zig_path }}
+      become: yes
+      ansible.builtin.copy:
+        remote_src: yes
+        src: "{{ temp_dir.path }}/{{ zig_version }}/"
+        dest: "{{ zig_path }}/{{ zig_version }}"
+
+    - name: Creating a symbolic link {{ zig_bin_path }} pointing to {{zig_path}}/{{zig_version}}/zig
+      become: yes
+      ansible.builtin.file:
+        src: "{{ zig_path }}/{{ zig_version }}/zig"
+        dest: "{{ zig_bin_path }}"
+        state: link
+
+    - name: Deleting temp directory
+      ansible.builtin.file:
+        path: "{{ temp_dir.path }}"
+        state: absent
