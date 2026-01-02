@@ -1,0 +1,49 @@
+- name: Install ly display manager
+  hosts: PCs
+  vars:
+    ly_repo_url: "https://codeberg.org/fairyglade/ly/"
+    ly_version: "v1.3.x"
+    dependencies:
+      - build-essential
+      - libpam0g-dev
+      - libxcb-xkb-dev
+      - xauth 
+      - xserver-xorg 
+      - brightnessctl
+
+  tasks:
+    - name: Install dependencies
+      become: yes
+      ansible.builtin.apt:
+        name: "{{ dependencies }}"
+        state: latest
+
+    - name: Create a temp folder
+      ansible.builtin.tempfile:
+        state: directory
+      register: temp_dir
+
+    - name: Clone ly repo
+      ansible.builtin.git:
+        repo: "{{ ly_repo_url }}"
+        dest: "{{ temp_dir.path }}"
+        version: "{{ ly_version }}"
+
+    - name: Building and installing ly
+      become: yes
+      command: sudo zig build installexe -Dinit_system=systemd
+      args:
+        chdir: "{{ temp_dir.path }}"
+
+    - name: Enable ly service
+      become: yes
+      ansible.builtin.service:
+        name: ly@tty2.service
+        enabled: true
+
+    - name: Remove temp directory
+      become: yes
+      ansible.builtin.file:
+        path: "{{ temp_dir.path }}"
+        state: absent
+
