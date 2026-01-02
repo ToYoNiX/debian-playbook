@@ -51,11 +51,16 @@
     - debug:
         var: ansible_user_id
 
-    - name: Create a folder in the home directory (Just for organization)
+    - name: Creating a folder in the home directory (Just for organization)
       ansible.builtin.file:
         path: /home/{{ ansible_user_id }}/Git/
         state: directory
         mode: '0775'
+
+    - name: Deleteing DWL if present
+      ansible.builtin.file:
+        path: /home/{{ ansible_user_id }}/Git/dwl
+        state: absent
 
     - name: Grab the build
       ansible.builtin.git:
