@@ -1,0 +1,25 @@
+- name: Install latest nvidia drivers
+  hosts: PCs
+  vars:
+    dependencies:
+      - linux-headers-generic
+    
+    drivers:
+      - nvidia-kernel-dkms
+      - nvidia-driver
+
+  tasks:
+    - name: Install dependencies
+      become: yes
+      ansible.builtin.apt:
+        name: "{{ dependencies }}"
+        state: latest
+
+    - name: Install drivers
+      become: yes
+      ansible.builtin.apt:
+        name: "{{ drivers }}"
+        state: latest
+
+    - name: Check installation
+      command: nvidia-smi
