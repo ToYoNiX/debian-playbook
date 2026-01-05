@@ -1,6 +1,7 @@
-- name: Install ToYoNiX's DWL Build
+- name: Install DWL Window Manager
   hosts: PCs
   vars:
+    build_repo: "https://github.com/toyonix/dwl" 
     dependencies:
       - git
       - cmake
@@ -51,21 +52,15 @@
     - debug:
         var: ansible_user_id
 
-    - name: Creating a folder in the home directory (Just for organization)
-      ansible.builtin.file:
-        path: /home/{{ ansible_user_id }}/Git/
+    - name: Create a temp dir for cloning and building
+      ansible.builtin.tempfile:
         state: directory
-        mode: '0775'
-
-    - name: Deleteing DWL if present
-      ansible.builtin.file:
-        path: /home/{{ ansible_user_id }}/Git/dwl
-        state: absent
+      register: temp_dir
 
     - name: Grab the build
       ansible.builtin.git:
-        repo: https://github.com/ToYoNiX/dwl
-        dest: /home/{{ ansible_user_id }}/Git/dwl
+        repo: "{{ build_repo }}"
+        dest: "{{ temp_dir.path }}"
 
     - name: Install dependencies
       become: yes
@@ -77,5 +72,10 @@
       command: sudo make clean install
       become: yes
       args:
-        chdir: /home/{{ ansible_user_id }}/Git/dwl
+        chdir: "{{ temp_dir.path }}"
+
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ temp_dir.path }}"
+        state: absent
  
