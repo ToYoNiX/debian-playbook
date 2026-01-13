@@ -1,0 +1,10 @@
+- name: Install Fuzzel app Launcher
+  hosts: PCs
+  become: yes
+
+  tasks:
+    - name: Install Fuzzel via apt
+      ansible.builtin.apt:
+        name: fuzzel
+        state: present
+        update_cache: yes
