@@ -1,0 +1,14 @@
+swhkd_repo: https://github.com/waycrate/swhkd.git
+# main, not a release: the no_rfkill build option is not in a release yet.
+swhkd_version: cbbfc4a981aa263155e3216a42549c9a3ae645fe
+swhkd_src_dir: /usr/local/src/swhkd
+
+# Built without rfkill support, it breaks Wi-Fi otherwise.
+swhkd_make_args: NO_RFKILL_SW_SUPPORT=1
+
+swhkd_dependencies:
+  - build-essential
+  - git
+  - libudev-dev
+  - rustup
+  - scdoc

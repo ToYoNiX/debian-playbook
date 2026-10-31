@@ -1,0 +1,24 @@
+- name: Install QEMU, libvirt and virt-manager
+  ansible.builtin.apt:
+    name: "{{ virtualization_packages }}"
+    state: present
+
+- name: Enable libvirt
+  ansible.builtin.service:
+    name: libvirtd
+    enabled: true
+    state: started
+
+- name: Add users to the libvirt and kvm groups
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: [libvirt, kvm]
+    append: true
+  loop: "{{ virtualization_users }}"
+
+- name: Allow libvirt guest traffic
+  ansible.builtin.include_role:
+    name: firewall
+    tasks_from: allow
+  vars:
+    firewall_rules: "{{ virtualization_firewall_rules }}"

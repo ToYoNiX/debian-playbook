@@ -1,0 +1,4 @@
+cpp_packages:
+  - g++
+  - gcc
+  - gdb

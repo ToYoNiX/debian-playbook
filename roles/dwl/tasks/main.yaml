@@ -1,0 +1,25 @@
+- name: Install dwl build dependencies and tools
+  ansible.builtin.apt:
+    name: "{{ dwl_build_dependencies + dwl_packages + dwl_pim_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Clone dwl
+  ansible.builtin.git:
+    repo: "{{ dwl_repo }}"
+    dest: "{{ dwl_src_dir }}"
+    version: "{{ dwl_version }}"
+  register: dwl_source
+
+- name: Check for an installed dwl
+  ansible.builtin.stat:
+    path: /usr/local/bin/dwl
+  register: dwl_binary
+
+- name: Build and install dwl
+  ansible.builtin.command: make clean install
+  args:
+    chdir: "{{ dwl_src_dir }}"
+  when: dwl_source is changed or not dwl_binary.stat.exists
+  changed_when: true

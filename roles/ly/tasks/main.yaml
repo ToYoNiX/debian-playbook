@@ -1,0 +1,27 @@
+- name: Install ly build dependencies
+  ansible.builtin.apt:
+    name: "{{ ly_dependencies }}"
+    state: present
+
+- name: Clone ly
+  ansible.builtin.git:
+    repo: "{{ ly_repo }}"
+    dest: "{{ ly_src_dir }}"
+    version: "{{ ly_version }}"
+  register: ly_source
+
+- name: Check for an installed ly
+  ansible.builtin.stat:
+    path: /usr/bin/ly
+  register: ly_binary
+
+- name: Build and install ly
+  ansible.builtin.command: "{{ zig_bin_path }} build installexe -Dinit_system=systemd"
+  args:
+    chdir: "{{ ly_src_dir }}"
+  when: ly_source is changed or not ly_binary.stat.exists
+  changed_when: true
+
+# Not enabled here, a machine may already be using gdm3. To switch to ly:
+#   systemctl disable gdm3 getty@tty2
+#   systemctl enable ly@tty2

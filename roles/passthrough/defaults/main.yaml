@@ -1,0 +1,20 @@
+# false removes the passthrough config and gives the GPU back to the host.
+passthrough_enabled: true
+
+# PCI ids of the GPU and its audio function, set per host in host_vars.
+# Find them with: lspci -nn | grep -i -e vga -e audio
+passthrough_vfio_ids: []
+
+passthrough_iommu_param: "{{ 'amd_iommu=on' if 'AuthenticAMD' in ansible_processor else 'intel_iommu=on' }}"
+
+# Kept off the GPU at boot so vfio-pci gets it first.
+passthrough_blacklist:
+  - nouveau
+  - nvidia
+
+# Host driver modules gpu-pass unloads and gpu-use loads, in unload order.
+passthrough_host_modules:
+  - nvidia_drm
+  - nvidia_modeset
+  - nvidia_uvm
+  - nvidia

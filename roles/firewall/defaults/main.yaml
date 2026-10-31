@@ -1,0 +1,7 @@
+firewall_ssh_port: 22
+
+# Ports opened on top of what the roles open, set per host or group.
+firewall_extra_rules: []
+
+# Used by tasks_from: allow. Each rule is { port, proto, comment, rule }.
+firewall_rules: []

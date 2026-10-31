@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Apply powertop tunings
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/powertop --auto-tune
+
+[Install]
+WantedBy=multi-user.target

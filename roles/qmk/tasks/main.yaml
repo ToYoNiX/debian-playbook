@@ -1,0 +1,78 @@
+- name: Install the QMK toolchain and flashers
+  ansible.builtin.apt:
+    name: "{{ qmk_packages }}"
+    state: present
+
+# Same files and places as QMK's util/install_udev.sh.
+- name: Install qmk_id
+  ansible.builtin.get_url:
+    url: "https://github.com/qmk/qmk_udev/releases/download/{{ qmk_udev_release }}/qmk_id-linuxX64"
+    dest: /usr/lib/udev/qmk_id
+    checksum: "sha256:{{ qmk_udev_id_sha256 }}"
+    mode: "0755"
+  notify: Reload udev rules
+
+- name: Install the QMK udev rules
+  ansible.builtin.get_url:
+    url: "https://github.com/qmk/qmk_udev/releases/download/{{ qmk_udev_release }}/50-qmk.rules"
+    dest: /etc/udev/rules.d/50-qmk.rules
+    checksum: "sha256:{{ qmk_udev_rules_sha256 }}"
+    mode: "0644"
+  notify: Reload udev rules
+
+- name: Look up the home directory of {{ target_user }}
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ target_user }}"
+
+- name: Set the home directory of {{ target_user }}
+  ansible.builtin.set_fact:
+    qmk_user_home: "{{ getent_passwd[target_user][4] }}"
+
+# Debian blocks pip install --user (PEP 668), pipx gives the CLI its own venv
+# in ~/.local/share/pipx and links the qmk command into ~/.local/bin.
+- name: Install the QMK CLI
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.pipx:
+    name: qmk
+    state: present
+
+- name: Add ~/.local/bin to PATH
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.command: pipx ensurepath
+  register: qmk_ensurepath
+  changed_when: "'Success!' in qmk_ensurepath.stdout"
+
+# Only on the first run, an existing clone is left alone.
+- name: Clone {{ qmk_firmware_fork }} with qmk setup
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.command:
+    argv:
+      - "{{ qmk_user_home }}/.local/bin/qmk"
+      - setup
+      - --yes
+      - --home
+      - "{{ qmk_firmware_dir }}"
+      - --branch
+      - "{{ qmk_firmware_branch }}"
+      - "{{ qmk_firmware_fork }}"
+    creates: "{{ qmk_firmware_dir }}"
+
+# The firmware's python code runs inside the CLI's venv, so its requirements
+# go there too. Runs every time to follow changes to requirements.txt.
+- name: Install the firmware's python requirements
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.command:
+    argv:
+      - pipx
+      - runpip
+      - qmk
+      - install
+      - --requirement
+      - "{{ qmk_firmware_dir }}/requirements.txt"
+  register: qmk_requirements
+  changed_when: "'Successfully installed' in qmk_requirements.stdout"

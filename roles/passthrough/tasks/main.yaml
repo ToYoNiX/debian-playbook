@@ -1,0 +1,60 @@
+- name: Check the vfio ids are set
+  ansible.builtin.assert:
+    that: passthrough_vfio_ids | length > 0
+    fail_msg: Set passthrough_vfio_ids in host_vars for {{ inventory_hostname }}.
+  when: passthrough_enabled
+
+- name: Add the IOMMU and vfio-pci kernel parameters
+  ansible.builtin.template:
+    src: grub-vfio.cfg.j2
+    dest: /etc/default/grub.d/vfio.cfg
+    mode: "0644"
+  when: passthrough_enabled
+  notify: Update grub
+
+- name: Configure vfio modules and blacklist
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0644"
+  loop:
+    - { src: vfio-blacklist.conf.j2, dest: /etc/modprobe.d/vfio-blacklist.conf }
+    - { src: vfio.conf.j2, dest: /etc/modprobe.d/vfio.conf }
+    - { src: vfio-modules.conf.j2, dest: /etc/modules-load.d/vfio.conf }
+  loop_control:
+    label: "{{ item.dest }}"
+  when: passthrough_enabled
+  notify: Update initramfs
+
+- name: Install the gpu-pass and gpu-use scripts
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "0755"
+  loop: [gpu-pass, gpu-use]
+  when: passthrough_enabled
+
+- name: Remove the passthrough kernel parameters
+  ansible.builtin.file:
+    path: /etc/default/grub.d/vfio.cfg
+    state: absent
+  when: not passthrough_enabled
+  notify: Update grub
+
+- name: Remove the vfio modules config and blacklist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/modprobe.d/vfio-blacklist.conf
+    - /etc/modprobe.d/vfio.conf
+    - /etc/modules-load.d/vfio.conf
+  when: not passthrough_enabled
+  notify: Update initramfs
+
+- name: Remove the gpu-pass and gpu-use scripts
+  ansible.builtin.file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  loop: [gpu-pass, gpu-use]
+  when: not passthrough_enabled

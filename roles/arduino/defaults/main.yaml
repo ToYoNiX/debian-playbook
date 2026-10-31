@@ -1,0 +1,5 @@
+arduino_packages:
+  - arduino
+  - ftdi-eeprom
+  - libcanberra-gtk3-module
+  - python3-serial

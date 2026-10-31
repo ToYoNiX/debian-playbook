@@ -1,0 +1,10 @@
+- name: Base setup for every machine
+  hosts: all
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - common
+    - drivers
+    - firewall

@@ -1,0 +1,66 @@
+# Hardware is matched against /sys by bus, vendor id and optionally the start
+# of the PCI class (03 display, 0280 Wi-Fi, 04 audio). Compare with
+# lspci -nn and lsusb. Each entry can list:
+#   packages:       from main
+#   firmware:       from non-free-firmware
+#   non_free:       from non-free
+#   free_fallback:  from main, used instead of non_free when it is not enabled
+drivers_hardware:
+  - name: Intel graphics
+    bus: pci
+    vendor: "8086"
+    class: "03"
+    firmware: [firmware-intel-graphics]
+    non_free: [intel-media-va-driver-non-free]
+    free_fallback: [intel-media-va-driver]
+  - name: Intel Wi-Fi
+    bus: pci
+    vendor: "8086"
+    class: "0280"
+    firmware: [firmware-iwlwifi]
+  - name: Intel Bluetooth  # its firmware ships in firmware-iwlwifi
+    bus: usb
+    vendor: "8087"
+    firmware: [firmware-iwlwifi]
+  - name: Intel audio
+    bus: pci
+    vendor: "8086"
+    class: "04"
+    firmware: [firmware-sof-signed]
+  - name: AMD graphics
+    bus: pci
+    vendor: "1002"
+    class: "03"
+    packages: [mesa-va-drivers]
+    firmware: [firmware-amd-graphics]
+  # Combo cards put Bluetooth on USB under the card maker's vendor id, the
+  # PCI Wi-Fi match covers both since they share the firmware package.
+  - name: MediaTek Wi-Fi and Bluetooth
+    bus: pci
+    vendor: "14c3"
+    firmware: [firmware-mediatek]
+  - name: MediaTek USB adapters
+    bus: usb
+    vendor: "0e8d"
+    firmware: [firmware-mediatek]
+  - name: Realtek network and Bluetooth
+    bus: pci
+    vendor: "10ec"
+    firmware: [firmware-realtek]
+  - name: Realtek USB adapters
+    bus: usb
+    vendor: "0bda"
+    firmware: [firmware-realtek]
+
+# CPU vendor -> microcode package, from non-free-firmware.
+drivers_microcode:
+  GenuineIntel: intel-microcode
+  AuthenticAMD: amd64-microcode
+
+# Firmware and microcode do nothing inside VMs and containers.
+drivers_skip_guests: true
+
+# DKMS workaround for the MediaTek MT7922 Bluetooth card 13d3:3625, see
+# tasks/btusb-13d3-3625.yaml. Pinned so every run builds the same thing.
+drivers_btusb_13d3_3625_repo: https://github.com/Lucenx9/btusb-13d3-3625-dkms.git
+drivers_btusb_13d3_3625_commit: f494f4e6bc56a951799f54101fcc67983d4e001d

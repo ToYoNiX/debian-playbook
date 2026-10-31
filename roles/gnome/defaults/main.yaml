@@ -1,0 +1,107 @@
+# What the installer's "GNOME" choice installs. Its gnome metapackage
+# depends on LibreOffice, which the desktop role blocks, so that one is
+# skipped and the rest (task-desktop, gnome-core, ...) goes in.
+gnome_task: task-gnome-desktop
+
+gnome_packages:
+  - bibata-cursor-theme
+  - geary                 # the flatpak breaks dark mode on Debian 13
+  - gnome-calendar
+  - gnome-contacts
+  - gnome-themes-extra    # dark mode for legacy GTK3 apps
+  - papirus-icon-theme
+  - python3-psutil        # needed by the dconf module
+
+gnome_flatpaks:
+  - com.mattjakeman.ExtensionManager
+  - io.github.mrvladus.List  # Errands
+
+# Extensions packaged by Debian, with the uuid to enable.
+gnome_extensions_apt:
+  # Debian ships it under its Ubuntu uuid, not the extensions.gnome.org one.
+  gnome-shell-extension-appindicator: ubuntu-appindicators@ubuntu.com
+  gnome-shell-extension-caffeine: caffeine@patapon.info
+  gnome-shell-extension-dashtodock: dash-to-dock@micxgx.gmail.com
+  gnome-shell-extension-gsconnect: gsconnect@andyholmes.github.io
+
+# Extensions from extensions.gnome.org, installed for target_user.
+gnome_extensions_ego:
+  - AlphabeticalAppGrid@stuarthayhurst
+  - BingWallpaper@ineffable-gmail.com
+  - Bluetooth-Battery-Meter@maniacx.github.com
+  - copyous@boerdereinar.dev
+  - quick-settings-audio-panel@rayzeq.github.io
+
+# Monitor brightness over DDC, only useful with external monitors so laptops
+# skip it.
+gnome_extensions_ego_desktop_only:
+  - display-brightness-ddcutil@themightydeity.github.com
+
+# Copyous needs libgda (with SQLite) and GSound, unzip unpacks the
+# extensions.gnome.org downloads.
+gnome_extension_dependencies:
+  - gir1.2-gda-5.0
+  - gir1.2-gsound-1.0
+  - unzip
+
+gnome_autostart:
+  - type: portal
+    app_id: org.gnome.Geary
+    command: geary
+    args: --gapplication-service
+    flatpak: false
+
+  - type: portal
+    app_id: io.github.mrvladus.List
+    command: errands
+    args: --gapplication-service
+
+gnome_firewall_rules:
+  - { port: "1714:1764", proto: tcp, comment: gsconnect }
+  - { port: "1714:1764", proto: udp, comment: gsconnect }
+
+gnome_dconf:
+  /org/gnome/desktop/interface/color-scheme: "'prefer-dark'"
+  /org/gnome/desktop/interface/gtk-theme: "'Adwaita-dark'"
+  /org/gnome/desktop/interface/icon-theme: "'Papirus-Dark'"
+  /org/gnome/desktop/interface/cursor-theme: "'Bibata-Modern-Classic'"
+  /org/gnome/desktop/interface/show-battery-percentage: "true"
+  # Tweaks' "Minimize" titlebar button.
+  /org/gnome/desktop/wm/preferences/button-layout: "'appmenu:minimize,close'"
+  # No folders in the app grid, Alphabetical App Grid keeps it sorted. An
+  # empty list makes GNOME Shell recreate its default folders on the next
+  # login, so keep YaST and Pardus: they only hold openSUSE and Pardus apps,
+  # stay empty on Debian and the grid hides empty folders.
+  /org/gnome/desktop/app-folders/folder-children: "['YaST', 'Pardus']"
+  # GNOME Software's "Automatic Updates", updates are still shown, just not
+  # downloaded and installed in the background.
+  /org/gnome/software/download-updates: "false"
+  # Geary's "Watch for new mail when closed".
+  /org/gnome/Geary/run-in-background: "true"
+  /org/gnome/shell/favorite-apps: >-
+    ['app.zen_browser.zen.desktop', 'com.bitwarden.desktop.desktop', 'org.gnome.Geary.desktop',
+    'org.gnome.Calendar.desktop', 'io.github.mrvladus.List.desktop', 'org.gnome.TextEditor.desktop',
+    'org.gnome.Nautilus.desktop', 'md.obsidian.Obsidian.desktop', 'com.github.flxzt.rnote.desktop',
+    'page.kramo.Cartridges.desktop', 'com.obsproject.Studio.desktop', 'io.missioncenter.MissionCenter.desktop',
+    'io.github.Qalculate.desktop', 'com.microsoft.VSCode.desktop', 'org.gnome.Software.desktop',
+    'virt-manager.desktop', 'org.gnome.Terminal.desktop']
+  # Dash to Dock, without the monitor it is pinned to on aorus.
+  /org/gnome/shell/extensions/dash-to-dock/animation-time: "0.2"
+  /org/gnome/shell/extensions/dash-to-dock/apply-custom-theme: "false"
+  /org/gnome/shell/extensions/dash-to-dock/autohide: "true"
+  /org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen: "false"
+  /org/gnome/shell/extensions/dash-to-dock/background-opacity: "0.8"
+  /org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink: "false"
+  /org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size: "48"
+  /org/gnome/shell/extensions/dash-to-dock/dock-fixed: "false"
+  /org/gnome/shell/extensions/dash-to-dock/dock-position: "'BOTTOM'"
+  /org/gnome/shell/extensions/dash-to-dock/extend-height: "false"
+  /org/gnome/shell/extensions/dash-to-dock/height-fraction: "0.9"
+  /org/gnome/shell/extensions/dash-to-dock/hide-delay: "0.2"
+  /org/gnome/shell/extensions/dash-to-dock/intellihide: "true"
+  /org/gnome/shell/extensions/dash-to-dock/intellihide-mode: "'ALL_WINDOWS'"
+  /org/gnome/shell/extensions/dash-to-dock/pressure-threshold: "100.0"
+  /org/gnome/shell/extensions/dash-to-dock/require-pressure-to-show: "true"
+  /org/gnome/shell/extensions/dash-to-dock/show-delay: "0.25"
+  /org/gnome/shell/extensions/dash-to-dock/show-dock-urgent-notify: "false"
+  /org/gnome/shell/extensions/dash-to-dock/show-mounts-network: "false"

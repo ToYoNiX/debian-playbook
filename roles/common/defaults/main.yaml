@@ -1,0 +1,30 @@
+common_timezone: Africa/Cairo
+
+common_packages:
+  - cowsay
+  - curl
+  - fastfetch
+  - git
+  - libcap2-bin   # setcap, Mission Center's Magpie setup needs these three
+  - lm-sensors    # sensors-detect
+  - neovim
+  - net-tools
+  - nethogs
+  - nmap
+  - nvme-cli
+  - smartmontools
+  - sqlite3
+  - tmux
+  - tree
+  - vim
+  - wget
+
+# Size of the zram swap as a percentage of RAM.
+common_zram_percent: 100
+
+# Extra sysctl settings, e.g. { fs.inotify.max_user_watches: 524288 }
+common_sysctl: {}
+
+# Global git identity for target_user, skipped while empty.
+common_git_user_name: ""
+common_git_user_email: ""

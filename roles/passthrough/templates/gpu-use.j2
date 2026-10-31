@@ -1,0 +1,6 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Give the GPU back to the host driver.
+
+sudo modprobe -r vfio_pci
+sudo modprobe -a {{ passthrough_host_modules | join(' ') }}

@@ -1,0 +1,13 @@
+ansible_user: toyonix
+
+# The desktop user that per-user settings (groups, dconf, services) apply to.
+target_user: "{{ ansible_user }}"
+
+common_git_user_name: ToYoNiX
+common_git_user_email: toyonix.assemmohamed.2005@gmail.com
+
+# Every role's options live in roles/<role>/defaults/main.yaml and can be
+# overridden here, in a group file, or in host_vars. For example:
+#
+# firewall_extra_rules:
+#   - { port: 443, proto: tcp, comment: https }

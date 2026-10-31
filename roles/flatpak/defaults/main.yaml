@@ -1,0 +1,2 @@
+# Apps to install from flathub, usually set in group_vars.
+flatpak_apps: []

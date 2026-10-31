@@ -1,0 +1,31 @@
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+# Must come before enabling ufw, otherwise the run locks itself out.
+- name: Allow SSH (rate limited)
+  community.general.ufw:
+    rule: limit
+    port: "{{ firewall_ssh_port | string }}"
+    proto: tcp
+    comment: ssh
+
+- name: Deny incoming by default
+  community.general.ufw:
+    default: deny
+    direction: incoming
+
+- name: Allow outgoing by default
+  community.general.ufw:
+    default: allow
+    direction: outgoing
+
+- name: Open extra ports for this host
+  ansible.builtin.include_tasks: allow.yaml
+  vars:
+    firewall_rules: "{{ firewall_extra_rules }}"
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled

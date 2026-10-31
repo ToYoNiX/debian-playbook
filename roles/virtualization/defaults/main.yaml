@@ -1,0 +1,19 @@
+virtualization_packages:
+  - bridge-utils
+  - libvirt-clients
+  - libvirt-daemon-config-network
+  - libvirt-daemon-system
+  - ovmf
+  - qemu-system-x86
+  - virt-manager
+
+# Users allowed to manage VMs without sudo.
+virtualization_users:
+  - "{{ target_user }}"
+
+# ufw drops input and forwarded traffic by default, which cuts guests on
+# the NAT network (virbr0) off from DHCP, DNS and the internet.
+virtualization_firewall_rules:
+  - { interface: virbr0, direction: in, comment: libvirt guests }
+  - { route: true, interface_in: virbr0, comment: libvirt nat }
+  - { route: true, interface_out: virbr0, comment: libvirt nat }

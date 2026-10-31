@@ -1,0 +1,17 @@
+- name: Virtualization hosts
+  hosts: virtualization
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - virtualization
+
+- name: GPU passthrough hosts
+  hosts: passthrough
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - passthrough

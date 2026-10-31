@@ -1,0 +1,3 @@
+auto_cpufreq_repo: https://github.com/AdnanHodzic/auto-cpufreq.git
+# A branch or a release tag like v3.2.0.
+auto_cpufreq_version: master

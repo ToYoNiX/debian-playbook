@@ -1,0 +1,3 @@
+# Node dev servers run out of inotify watches with the default limit.
+common_sysctl:
+  fs.inotify.max_user_watches: 524288

@@ -1,0 +1,44 @@
+# General apps every desktop gets. Category specific apps live in their own
+# role (notetaking, gaming, ...).
+flatpak_apps:
+  - app.zen_browser.zen
+  - com.bitwarden.desktop
+  - com.discordapp.Discord
+  - com.getpostman.Postman
+  - com.github.alexhuntley.Plots
+  - com.github.tchx84.Flatseal
+  - com.obsproject.Studio
+  - dev.bragefuglseth.Keypunch
+  - fr.handbrake.ghb
+  - io.github.Qalculate
+  - io.missioncenter.MissionCenter
+  - it.mijorus.gearlever
+  - org.inkscape.Inkscape
+  - org.kicad.KiCad
+  - org.libreoffice.LibreOffice
+  - org.telegram.desktop
+  - se.sjoerd.Graphs
+  - uk.org.greenend.chiark.sgtatham.putty
+  - us.zoom.Zoom
+
+# Started with the session, see roles/autostart/defaults/main.yaml.
+desktop_autostart:
+  - type: portal
+    app_id: com.bitwarden.desktop
+    command: bitwarden.sh
+    args: --autostart %U
+
+  - type: launcher
+    app_id: com.discordapp.Discord
+    flag: --start-minimized
+
+  - type: custom
+    file: syncthing-start
+    name: Start Syncthing
+    exec: syncthing serve --no-browser --logfile=default
+    fields:
+      GenericName: File synchronization
+      Comment: Starts the main syncthing process in the background.
+      Icon: syncthing
+      Keywords: synchronization;daemon;
+      Categories: Network;FileTransfer;P2P

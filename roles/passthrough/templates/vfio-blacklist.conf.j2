@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% for module in passthrough_blacklist %}
+blacklist {{ module }}
+{% endfor %}

@@ -1,0 +1,3 @@
+- name: Remind to reboot for the NVIDIA driver
+  ansible.builtin.debug:
+    msg: The NVIDIA driver changed, reboot {{ inventory_hostname }} then check with nvidia-smi.

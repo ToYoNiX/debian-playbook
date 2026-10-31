@@ -1,0 +1,40 @@
+desktop_packages:
+  - fonts-font-awesome
+  - fonts-noto-cjk
+  - fonts-noto-color-emoji
+  - fonts-noto-extra
+  - gparted
+  - imagemagick
+  - mpv
+  - pandoc
+  - syncthing
+  - yt-dlp
+
+desktop_firewall_rules:
+  - { port: 22000, proto: tcp, comment: syncthing }
+  - { port: 22000, proto: udp, comment: syncthing }
+  - { port: 21027, proto: udp, comment: syncthing discovery }
+
+# Default browser for target_user, the .desktop file of the app.
+desktop_browser: app.zen_browser.zen.desktop
+
+# Removed and blocked in apt before the flatpak apps go in, the LibreOffice
+# flatpak replaces it.
+desktop_remove_packages:
+  - "libreoffice*"
+
+# Newer PipeWire from backports, for screen sharing from flatpak apps.
+desktop_pipewire_backports: true
+
+desktop_pipewire_packages:
+  - gstreamer1.0-pipewire
+  - libpipewire-0.3-0t64
+  - libpipewire-0.3-common
+  - libpipewire-0.3-modules
+  - libspa-0.2-bluetooth
+  - libspa-0.2-modules
+  - pipewire
+  - pipewire-alsa
+  - pipewire-audio
+  - pipewire-bin
+  - pipewire-pulse

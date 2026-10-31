@@ -1,0 +1,59 @@
+# VS Code from Microsoft's apt repo, following
+# https://code.visualstudio.com/docs/setup/linux
+- name: Let the code package manage its apt repo
+  ansible.builtin.debconf:
+    name: code
+    question: code/add-microsoft-repo
+    vtype: boolean
+    value: "true"
+
+- name: Install gpg
+  ansible.builtin.apt:
+    name: gpg
+    state: present
+
+- name: Check for the Microsoft signing key
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/microsoft.gpg
+  register: vscode_keyring
+
+- name: Install the Microsoft signing key
+  when: not vscode_keyring.stat.exists
+  block:
+    - name: Download the key
+      ansible.builtin.get_url:
+        url: "{{ vscode_key }}"
+        dest: /tmp/microsoft.asc
+        mode: "0644"
+
+    - name: Dearmor the key into /usr/share/keyrings
+      ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/microsoft.gpg /tmp/microsoft.asc
+      args:
+        creates: /usr/share/keyrings/microsoft.gpg
+
+  always:
+    - name: Remove the downloaded key
+      ansible.builtin.file:
+        path: /tmp/microsoft.asc
+        state: absent
+
+# Only written when missing: once installed, the code package rewrites this
+# file itself on upgrades.
+- name: Add the VS Code repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/vscode.sources
+    force: false
+    mode: "0644"
+    content: |
+      Types: deb
+      URIs: https://packages.microsoft.com/repos/code
+      Suites: stable
+      Components: main
+      Architectures: amd64,arm64,armhf
+      Signed-By: /usr/share/keyrings/microsoft.gpg
+
+- name: Install VS Code
+  ansible.builtin.apt:
+    name: code
+    state: present
+    update_cache: true

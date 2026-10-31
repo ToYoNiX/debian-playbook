@@ -1,0 +1,17 @@
+- name: Remind to reboot for drivers
+  ansible.builtin.debug:
+    msg: New firmware or microcode was installed, reboot {{ inventory_hostname }} to load it.
+
+- name: Reload btusb
+  ansible.builtin.shell: modprobe -r btusb && modprobe btusb
+  register: drivers_btusb_reload
+  changed_when: drivers_btusb_reload.rc == 0
+  failed_when: false
+  notify: Report btusb reload
+
+- name: Report btusb reload
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'Reloaded btusb with the fixed module, check with bluetoothctl show.'
+         if drivers_btusb_reload.rc == 0 else
+         'btusb is in use and could not be reloaded, reboot ' ~ inventory_hostname ~ ' to load the fixed module.' }}

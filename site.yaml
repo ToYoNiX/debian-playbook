@@ -1,0 +1,20 @@
+# Full setup in dependency order. A host only gets the plays for the groups
+# it is in. Run one category alone with ansible-playbook playbooks/<name>.yaml
+- name: Base setup
+  ansible.builtin.import_playbook: playbooks/common.yaml
+- name: Power management
+  ansible.builtin.import_playbook: playbooks/power.yaml
+- name: NVIDIA drivers
+  ansible.builtin.import_playbook: playbooks/nvidia.yaml
+- name: Virtualization
+  ansible.builtin.import_playbook: playbooks/virtualization.yaml
+- name: Desktops
+  ansible.builtin.import_playbook: playbooks/desktop.yaml
+- name: Note-taking
+  ansible.builtin.import_playbook: playbooks/notetaking.yaml
+- name: Gaming
+  ansible.builtin.import_playbook: playbooks/gaming.yaml
+- name: Development
+  ansible.builtin.import_playbook: playbooks/development.yaml
+- name: Docker
+  ansible.builtin.import_playbook: playbooks/docker.yaml

@@ -1,0 +1,58 @@
+- name: Install GNOME
+  ansible.builtin.apt:
+    name: "{{ gnome_task }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the gdm drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/gdm.service.d
+    state: directory
+    mode: "0755"
+
+# gdm3 ships without an [Install] section, so "systemctl enable gdm3" fails
+# once its display-manager link is gone (e.g. after switching to ly). This
+# adds one so it can be enabled and disabled by hand. Enabling is left to
+# you, the playbook never turns a display manager on or off.
+# https://askubuntu.com/questions/1361285/cant-enable-gdm3-after-following-a-tutorial-on-how-to-remove-kde-from-ubuntu
+- name: Make gdm3 enableable
+  ansible.builtin.template:
+    src: gdm-install.conf.j2
+    dest: /etc/systemd/system/gdm.service.d/install.conf
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Install GNOME packages
+  ansible.builtin.apt:
+    name: "{{ gnome_packages }}"
+    state: present
+
+- name: Install GNOME flatpaks
+  community.general.flatpak:
+    name: "{{ gnome_flatpaks }}"
+    state: present
+
+- name: Install GNOME extensions
+  ansible.builtin.import_tasks: extensions.yaml
+
+- name: Apply GNOME settings
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+  loop: "{{ gnome_dconf | dict2items }}"
+
+- name: Open GSConnect ports
+  ansible.builtin.include_role:
+    name: firewall
+    tasks_from: allow
+  vars:
+    firewall_rules: "{{ gnome_firewall_rules }}"
+
+- name: Start Geary and Errands with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ gnome_autostart }}"

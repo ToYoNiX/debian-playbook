@@ -1,0 +1,23 @@
+- name: Install xz-utils
+  ansible.builtin.apt:
+    name: xz-utils
+    state: present
+
+- name: Create {{ zig_install_dir }}
+  ansible.builtin.file:
+    path: "{{ zig_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download and extract zig {{ zig_version }}
+  ansible.builtin.unarchive:
+    src: "https://ziglang.org/download/{{ zig_version }}/zig-{{ zig_arch }}-linux-{{ zig_version }}.tar.xz"
+    dest: "{{ zig_install_dir }}"
+    remote_src: true
+    creates: "{{ zig_install_dir }}/zig-{{ zig_arch }}-linux-{{ zig_version }}/zig"
+
+- name: Link {{ zig_bin_path }}
+  ansible.builtin.file:
+    src: "{{ zig_install_dir }}/zig-{{ zig_arch }}-linux-{{ zig_version }}/zig"
+    dest: "{{ zig_bin_path }}"
+    state: link

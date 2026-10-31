@@ -1,0 +1,20 @@
+gaming_flatpaks:
+  - com.usebottles.bottles
+  - com.valvesoftware.Steam
+  - page.kramo.Cartridges
+  - net.davidotek.pupgui2  # ProtonUp-Qt
+
+# MangoHud must match the freedesktop version each app's runtime expects,
+# check with: flatpak info --show-metadata <app> | grep -A1 VulkanLayer
+gaming_mangohud_branches:
+  - "25.08"  # Bottles (org.gnome.Platform 50)
+  - "26.08"  # Steam (org.freedesktop.Platform 26.08)
+
+# Some games (many through Proton) crash when they run out of memory maps.
+gaming_sysctl:
+  vm.max_map_count: 2147483642
+
+gaming_autostart:
+  - type: launcher
+    app_id: com.valvesoftware.Steam
+    flag: -silent

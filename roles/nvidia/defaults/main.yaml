@@ -1,0 +1,9 @@
+# Driver branch to pin, keeps apt from jumping to a new major branch.
+nvidia_driver_branch: 610
+
+nvidia_cuda_repo: "https://developer.download.nvidia.com/compute/cuda/repos/debian{{ ansible_distribution_major_version }}/x86_64"
+nvidia_cuda_keyring_url: "{{ nvidia_cuda_repo }}/cuda-keyring_1.1-1_all.deb"
+
+# 32-bit libs, only needed for Steam/Wine installed from apt.
+# The Steam flatpak ships its own.
+nvidia_i386_libs: false

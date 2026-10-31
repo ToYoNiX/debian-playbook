@@ -1,0 +1,17 @@
+- name: Install Arduino IDE and utils
+  ansible.builtin.apt:
+    name: "{{ arduino_packages }}"
+    state: present
+
+# Access to serial ports for uploading to boards.
+- name: Add the user to the dialout group
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    groups: dialout
+    append: true
+
+# Java apps render blank on non-reparenting WMs like dwl without this.
+- name: Set _JAVA_AWT_WM_NONREPARENTING
+  environment_kv:
+    key: _JAVA_AWT_WM_NONREPARENTING
+    value: "1"

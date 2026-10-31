@@ -1,0 +1,4 @@
+zig_version: 0.15.2
+zig_arch: x86_64
+zig_install_dir: /usr/local/zig
+zig_bin_path: /usr/local/bin/zig

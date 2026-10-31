@@ -1,0 +1,92 @@
+- name: Install drivers and firmware for the detected hardware
+  when: not (drivers_skip_guests and ansible_virtualization_role | default('') == 'guest')
+  block:
+    - name: Update the apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Check which apt components are enabled
+      ansible.builtin.command: apt-cache policy
+      register: drivers_apt_policy
+      changed_when: false
+      check_mode: false
+
+    - name: List PCI and USB devices
+      ansible.builtin.shell: |
+        for d in /sys/bus/pci/devices/*; do echo "pci $(cat "$d/vendor") $(cat "$d/class")"; done
+        for d in /sys/bus/usb/devices/*; do [ -f "$d/idVendor" ] && echo "usb 0x$(cat "$d/idVendor")"; done
+        true
+      register: drivers_devices
+      changed_when: false
+      check_mode: false
+
+    - name: Match the hardware
+      ansible.builtin.set_fact:
+        drivers_matched: "{{ drivers_matched | default([]) + [item] }}"
+      loop: "{{ drivers_hardware }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: >-
+        drivers_devices.stdout_lines
+        | select('match', '^' ~ item.bus ~ ' 0x' ~ item.vendor ~ ((' 0x' ~ item.class) if item.class is defined else ''))
+        | list | length > 0
+
+    - name: Work out the packages
+      vars:
+        drivers_found: "{{ drivers_matched | default([]) }}"
+      ansible.builtin.set_fact:
+        drivers_has_non_free: "{{ drivers_apt_policy.stdout is search('c=non-free,') }}"
+        drivers_has_non_free_firmware: "{{ drivers_apt_policy.stdout is search('c=non-free-firmware,') }}"
+        drivers_main: "{{ drivers_found | map(attribute='packages', default=[]) | flatten }}"
+        drivers_fallback: "{{ drivers_found | map(attribute='free_fallback', default=[]) | flatten }}"
+        drivers_non_free: "{{ drivers_found | map(attribute='non_free', default=[]) | flatten }}"
+        drivers_firmware: >-
+          {{ (drivers_found | map(attribute='firmware', default=[]) | flatten
+              + (drivers_microcode | dict2items | selectattr('key', 'in', ansible_processor) | map(attribute='value') | list))
+             | unique }}
+
+    - name: Show what was found
+      ansible.builtin.debug:
+        msg:
+          - "Hardware: {{ drivers_matched | default([]) | map(attribute='name') | join(', ') or 'nothing to install for' }}"
+          - "non-free-firmware enabled: {{ drivers_has_non_free_firmware }}, non-free enabled: {{ drivers_has_non_free }}"
+
+    - name: Warn about skipped firmware
+      ansible.builtin.debug:
+        msg: >-
+          non-free-firmware is not enabled in apt, skipping {{ drivers_firmware | join(', ') }}.
+          Add it to the components in your sources and run again.
+      when: drivers_firmware | length > 0 and not drivers_has_non_free_firmware
+
+    - name: Warn about skipped non-free drivers
+      ansible.builtin.debug:
+        msg: >-
+          non-free is not enabled in apt, installing {{ drivers_fallback | join(', ') or 'nothing' }}
+          instead of {{ drivers_non_free | join(', ') }}.
+      when: drivers_non_free | length > 0 and not drivers_has_non_free
+
+    - name: Install drivers from main
+      ansible.builtin.apt:
+        name: "{{ drivers_main + ([] if drivers_has_non_free else drivers_fallback) }}"
+        state: present
+      when: (drivers_main + ([] if drivers_has_non_free else drivers_fallback)) | length > 0
+      notify: Remind to reboot for drivers
+
+    - name: Install firmware and microcode
+      ansible.builtin.apt:
+        name: "{{ drivers_firmware }}"
+        state: present
+      when: drivers_firmware | length > 0 and drivers_has_non_free_firmware
+      notify: Remind to reboot for drivers
+
+    - name: Install non-free drivers
+      ansible.builtin.apt:
+        name: "{{ drivers_non_free }}"
+        state: present
+      when: drivers_non_free | length > 0 and drivers_has_non_free
+      notify: Remind to reboot for drivers
+
+    - name: Apply the 13d3:3625 Bluetooth workaround
+      ansible.builtin.import_tasks: btusb-13d3-3625.yaml
+      tags: btusb_13d3_3625

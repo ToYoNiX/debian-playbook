@@ -1,0 +1,7 @@
+# Empty installs the latest, or pin e.g. "1.19.1-1".
+nvidia_ctk_version: ""
+
+# Also add NVIDIA's experimental channel.
+nvidia_ctk_experimental: false
+
+nvidia_ctk_arch: amd64

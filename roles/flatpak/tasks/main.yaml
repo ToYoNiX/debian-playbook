@@ -1,0 +1,22 @@
+- name: Install flatpak
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+
+- name: Install the GNOME Software flatpak plugin
+  ansible.builtin.apt:
+    name: gnome-software-plugin-flatpak
+    state: present
+  when: "'gnome' in group_names"
+
+- name: Add the flathub remote
+  community.general.flatpak_remote:
+    name: flathub
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+    state: present
+
+- name: Install flatpak apps
+  community.general.flatpak:
+    name: "{{ flatpak_apps }}"
+    state: present
+  when: flatpak_apps | length > 0

@@ -1,0 +1,32 @@
+# Entries to create in target_user's ~/.config/autostart, the three ways
+# GNOME/flatpak create them:
+#
+# portal: what an app writes when it asks the background portal to start
+# with the session (Geary, Errands, Bitwarden).
+#
+#   - type: portal
+#     app_id: org.gnome.Geary
+#     command: geary
+#     args: --gapplication-service
+#     flatpak: false            # default true
+#
+# launcher: the app's own .desktop launcher with a flag added to Exec, like
+# adding an app under Startup Applications and editing it.
+#
+#   - type: launcher
+#     app_id: com.valvesoftware.Steam
+#     flag: -silent
+#
+# custom: a hand written entry for a command (Syncthing). fields are extra
+# keys for the [Desktop Entry] section.
+#
+#   - type: custom
+#     file: syncthing-start
+#     name: Start Syncthing
+#     exec: syncthing serve --no-browser
+#     fields:
+#       Icon: syncthing
+autostart_entries: []
+
+# Where flatpak exports system-wide app launchers.
+autostart_flatpak_applications: /var/lib/flatpak/exports/share/applications

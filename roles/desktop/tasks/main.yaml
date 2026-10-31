@@ -1,0 +1,66 @@
+- name: Block packages replaced by flatpaks
+  ansible.builtin.template:
+    src: blocked-packages.pref.j2
+    dest: /etc/apt/preferences.d/desktop-blocked.pref
+    mode: "0644"
+
+- name: Remove packages replaced by flatpaks
+  ansible.builtin.apt:
+    name: "{{ desktop_remove_packages }}"
+    state: absent
+    purge: true
+    autoremove: true
+
+# apt_repository skips the line if it is already in any sources file, so
+# machines that have backports enabled by hand do not get a duplicate.
+- name: Enable backports
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ {{ ansible_distribution_release }}-backports main contrib non-free non-free-firmware"
+    filename: debian-backports
+  when: desktop_pipewire_backports
+
+# latest, not present: present would keep the stable versions that are
+# already installed instead of moving them to backports.
+- name: Install PipeWire from backports  # noqa: package-latest
+  ansible.builtin.apt:
+    name: "{{ desktop_pipewire_packages }}"
+    state: latest
+    default_release: "{{ ansible_distribution_release }}-backports"
+    update_cache: true
+  when: desktop_pipewire_backports
+
+- name: Install desktop packages
+  ansible.builtin.apt:
+    name: "{{ desktop_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Look up the home directory of {{ target_user }}
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ target_user }}"
+
+# The same entries "Default Applications" in GNOME Settings writes.
+- name: Set the default browser
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.ini_file:
+    path: "{{ getent_passwd[target_user][4] }}/.config/mimeapps.list"
+    section: Default Applications
+    option: "{{ item }}"
+    value: "{{ desktop_browser }}"
+    no_extra_spaces: true
+    mode: "0644"
+  loop:
+    - application/xhtml+xml
+    - text/html
+    - x-scheme-handler/http
+    - x-scheme-handler/https
+
+- name: Open syncthing ports
+  ansible.builtin.include_role:
+    name: firewall
+    tasks_from: allow
+  vars:
+    firewall_rules: "{{ desktop_firewall_rules }}"

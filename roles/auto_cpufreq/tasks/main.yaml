@@ -1,0 +1,54 @@
+- name: Check for the auto-cpufreq tool
+  ansible.builtin.stat:
+    path: /usr/local/bin/auto-cpufreq
+  register: auto_cpufreq_tool
+
+# Created by "auto-cpufreq --install", the installer refuses to run while
+# it exists.
+- name: Check for the auto-cpufreq daemon
+  ansible.builtin.stat:
+    path: /usr/local/bin/auto-cpufreq-remove
+  register: auto_cpufreq_daemon
+
+- name: Install the auto-cpufreq tool
+  when: not auto_cpufreq_tool.stat.exists
+  block:
+    - name: Create a temp dir
+      ansible.builtin.tempfile:
+        state: directory
+      register: auto_cpufreq_tmp
+
+    # Full clone: the build reads its version from the git tags and refuses
+    # a shallow repository.
+    - name: Clone auto-cpufreq
+      ansible.builtin.git:
+        repo: "{{ auto_cpufreq_repo }}"
+        dest: "{{ auto_cpufreq_tmp.path }}"
+        version: "{{ auto_cpufreq_version }}"
+
+    - name: Run the installer
+      ansible.builtin.command: ./auto-cpufreq-installer --install
+      args:
+        chdir: "{{ auto_cpufreq_tmp.path }}"
+      environment:
+        TERM: dumb  # the installer calls tput
+      changed_when: true
+
+  always:
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ auto_cpufreq_tmp.path }}"
+        state: absent
+      when: auto_cpufreq_tmp.path is defined
+
+# Also disables power-profiles-daemon and bluetooth auto-enable on boot.
+- name: Install the auto-cpufreq daemon
+  ansible.builtin.command: /usr/local/bin/auto-cpufreq --install
+  when: not auto_cpufreq_daemon.stat.exists
+  changed_when: true
+
+- name: Enable auto-cpufreq
+  ansible.builtin.systemd_service:
+    name: auto-cpufreq.service
+    enabled: true
+    state: started

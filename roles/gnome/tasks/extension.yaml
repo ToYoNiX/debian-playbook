@@ -1,0 +1,59 @@
+# Installs one extension from extensions.gnome.org, the build matching this
+# GNOME Shell version. Already installed extensions are left alone, update
+# them from Extension Manager.
+- name: Check for {{ gnome_extension_uuid }}
+  ansible.builtin.stat:
+    path: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}/metadata.json"
+  register: gnome_extension_installed
+
+- name: Install {{ gnome_extension_uuid }}
+  when: not gnome_extension_installed.stat.exists
+  become: true
+  become_user: "{{ target_user }}"
+  block:
+    - name: Create a temp dir
+      ansible.builtin.tempfile:
+        state: directory
+      register: gnome_extension_tmp
+
+    - name: Download the build for this GNOME version of {{ gnome_extension_uuid }}
+      ansible.builtin.get_url:
+        url: "https://extensions.gnome.org/download-extension/{{ gnome_extension_uuid }}.shell-extension.zip?shell_version={{ gnome_shell_major }}"
+        dest: "{{ gnome_extension_tmp.path }}/extension.zip"
+        mode: "0644"
+        timeout: 60
+      register: gnome_extension_download
+      retries: 3
+      delay: 5
+      until: gnome_extension_download is succeeded
+
+    - name: Create the extension directory
+      ansible.builtin.file:
+        path: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}"
+        state: directory
+        mode: "0755"
+
+    - name: Unpack {{ gnome_extension_uuid }}
+      ansible.builtin.unarchive:
+        src: "{{ gnome_extension_tmp.path }}/extension.zip"
+        dest: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}"
+        remote_src: true
+
+    - name: Check for settings schemas
+      ansible.builtin.stat:
+        path: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}/schemas"
+      register: gnome_extension_schemas
+
+    - name: Compile the settings schemas
+      ansible.builtin.command:
+        cmd: glib-compile-schemas .
+        chdir: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}/schemas"
+        creates: "{{ gnome_extensions_dir }}/{{ gnome_extension_uuid }}/schemas/gschemas.compiled"
+      when: gnome_extension_schemas.stat.exists
+
+  always:
+    - name: Remove the temp dir
+      ansible.builtin.file:
+        path: "{{ gnome_extension_tmp.path }}"
+        state: absent
+      when: gnome_extension_tmp.path is defined

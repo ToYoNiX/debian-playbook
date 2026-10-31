@@ -1,0 +1,21 @@
+# The one-line source from GitHub's install instructions, replaced by the
+# deb822 one below so apt does not see the repo twice.
+- name: Remove the old GitHub CLI source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/github-cli.list
+    state: absent
+
+- name: Add the GitHub CLI repository
+  ansible.builtin.deb822_repository:
+    name: github-cli
+    types: deb
+    uris: "{{ gh_repo }}"
+    suites: stable
+    components: main
+    signed_by: "{{ gh_key }}"
+
+- name: Install the GitHub CLI
+  ansible.builtin.apt:
+    name: gh
+    state: present
+    update_cache: true

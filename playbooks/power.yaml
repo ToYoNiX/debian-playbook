@@ -1,0 +1,18 @@
+- name: Laptops and portable devices
+  hosts: laptop
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - auto_cpufreq
+    - battery
+
+- name: Servers
+  hosts: server
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - powertop

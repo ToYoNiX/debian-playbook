@@ -1,0 +1,28 @@
+- name: Install swhkd build dependencies
+  ansible.builtin.apt:
+    name: "{{ swhkd_dependencies }}"
+    state: present
+
+- name: Install the stable Rust toolchain
+  ansible.builtin.command: rustup default stable
+  register: swhkd_rustup
+  changed_when: "'installed' in swhkd_rustup.stdout + swhkd_rustup.stderr and 'unchanged' not in swhkd_rustup.stdout + swhkd_rustup.stderr"
+
+- name: Clone swhkd
+  ansible.builtin.git:
+    repo: "{{ swhkd_repo }}"
+    dest: "{{ swhkd_src_dir }}"
+    version: "{{ swhkd_version }}"
+  register: swhkd_source
+
+- name: Check for an installed swhkd
+  ansible.builtin.stat:
+    path: /usr/bin/swhkd
+  register: swhkd_binary
+
+- name: Build and install swhkd
+  ansible.builtin.shell: "make {{ swhkd_make_args }} && make install"
+  args:
+    chdir: "{{ swhkd_src_dir }}"
+  when: swhkd_source is changed or not swhkd_binary.stat.exists
+  changed_when: true

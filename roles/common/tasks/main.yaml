@@ -1,0 +1,61 @@
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+
+- name: Install SSH server
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+
+- name: Enable SSH server
+  ansible.builtin.service:
+    name: ssh
+    enabled: true
+    state: started
+
+- name: Install zram-tools
+  ansible.builtin.apt:
+    name: zram-tools
+    state: present
+
+- name: Configure zram swap
+  ansible.builtin.template:
+    src: zramswap.j2
+    dest: /etc/default/zramswap
+    mode: "0644"
+  notify: Restart zramswap
+
+- name: Enable zram swap
+  ansible.builtin.service:
+    name: zramswap
+    enabled: true
+    state: started
+
+- name: Apply sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-ansible.conf
+    reload: true
+  loop: "{{ common_sysctl | dict2items }}"
+
+- name: Set the git identity
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.git_config:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    scope: global
+  loop:
+    - { name: user.name, value: "{{ common_git_user_name }}" }
+    - { name: user.email, value: "{{ common_git_user_email }}" }
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.value | length > 0

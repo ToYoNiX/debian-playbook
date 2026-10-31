@@ -1,0 +1,7 @@
+# Battery history and health viewer.
+battery_flatpaks:
+  - io.github.v81d.Wattage
+
+# GNOME's "Preserve Battery Health": UPower stops charging early on
+# batteries that support a charge limit.
+battery_charge_limit: true

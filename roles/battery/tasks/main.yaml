@@ -1,0 +1,37 @@
+- name: Install battery apps
+  community.general.flatpak:
+    name: "{{ battery_flatpaks }}"
+    state: present
+
+- name: Install upower
+  ansible.builtin.apt:
+    name: upower
+    state: present
+
+# Same call GNOME Settings makes for "Preserve Battery Health", on every
+# battery UPower reports as supporting a charge limit.
+- name: Find batteries with a charge limit
+  ansible.builtin.shell: |
+    prop() {
+      gdbus call --system --dest org.freedesktop.UPower --object-path "$1" \
+        --method org.freedesktop.DBus.Properties.Get org.freedesktop.UPower.Device "$2"
+    }
+    for dev in $(upower -e); do
+      case "$dev" in */battery_*) ;; *) continue ;; esac
+      line="$dev"
+      case "$(prop "$dev" ChargeThresholdSupported)" in *true*) line="$line supported" ;; esac
+      case "$(prop "$dev" ChargeThresholdEnabled)" in *true*) line="$line enabled" ;; esac
+      echo "$line"
+    done
+  register: battery_devices
+  changed_when: false
+  check_mode: false
+  when: battery_charge_limit
+
+- name: Turn on the charge limit
+  ansible.builtin.command: >-
+    gdbus call --system --dest org.freedesktop.UPower --object-path {{ item.split()[0] }}
+    --method org.freedesktop.UPower.Device.EnableChargeThreshold true
+  loop: "{{ battery_devices.stdout_lines | default([]) | select('search', ' supported') | reject('search', 'enabled') | list }}"
+  changed_when: true
+  when: battery_charge_limit

@@ -1,0 +1,6 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Hand the GPU to vfio-pci so a VM can use it.
+
+sudo modprobe -r {{ passthrough_host_modules | join(' ') }}
+sudo modprobe vfio_pci

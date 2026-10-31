@@ -1,0 +1,22 @@
+qmk_packages:
+  - avr-libc
+  - avrdude
+  - dfu-programmer
+  - dfu-util
+  - dos2unix
+  - gcc-arm-none-eabi
+  - gcc-avr
+  - pipx
+
+# QMK's udev rules and the qmk_id helper they call, from
+# https://github.com/qmk/qmk_udev releases. Pinned with checksums so every
+# run installs the same files, bump the tag and checksums to update.
+qmk_udev_release: v0.1.23
+qmk_udev_rules_sha256: cf87662b239c3a1ac4c6b6f2655873a9b7888e412b4b980d691da57ca336f0f4
+qmk_udev_id_sha256: 884d1b628cd876f809e08956532ff929c9efaabcfc69b025e0fee2810461f16f
+
+# The qmk_firmware fork `qmk setup` clones for target_user, and where to.
+# qmk_user_home is set once the home directory of target_user is looked up.
+qmk_firmware_fork: ToYoNiX/qmk_firmware
+qmk_firmware_branch: master
+qmk_firmware_dir: "{{ qmk_user_home }}/Git/toyonix/qmk-firmware"

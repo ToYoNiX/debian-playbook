@@ -1,0 +1,32 @@
+# Reusable entry point for other roles:
+#
+# - name: Open <app> ports
+#   ansible.builtin.include_role:
+#     name: firewall
+#     tasks_from: allow
+#   vars:
+#     firewall_rules: "{{ <role>_firewall_rules }}"
+#
+# A rule is a port rule { port, proto }, an interface rule
+# { interface, direction } or a routed rule { route: true, interface_in,
+# interface_out }, all with optional rule (default allow) and comment.
+
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: Apply firewall rules
+  community.general.ufw:
+    rule: "{{ item.rule | default('allow') }}"
+    port: "{{ item.port | string if item.port is defined else omit }}"
+    proto: "{{ item.proto | default('tcp') if item.port is defined else omit }}"
+    direction: "{{ item.direction | default(omit) }}"
+    interface: "{{ item.interface | default(omit) }}"
+    route: "{{ item.route | default(omit) }}"
+    interface_in: "{{ item.interface_in | default(omit) }}"
+    interface_out: "{{ item.interface_out | default(omit) }}"
+    comment: "{{ item.comment | default(omit) }}"
+  loop: "{{ firewall_rules }}"
+  loop_control:
+    label: "{{ item.comment | default(item.port | default(item.interface | default(item.interface_in | default(item.interface_out)))) }}"

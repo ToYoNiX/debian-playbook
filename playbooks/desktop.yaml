@@ -1,0 +1,32 @@
+- name: Desktop base
+  hosts: desktop
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - desktop
+    - flatpak
+    - role: autostart
+      vars:
+        autostart_entries: "{{ desktop_autostart | default([]) }}"
+
+- name: GNOME desktops
+  hosts: gnome
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - gnome
+
+- name: Desktops running dwl
+  hosts: dwl
+  become: true
+  # A dry run (--check) installs nothing, so later steps that need those
+  # packages fail. Keep going so the whole run is shown, real runs still stop.
+  ignore_errors: "{{ ansible_check_mode }}"
+  roles:
+    - ly
+    - dwl
+    - swhkd

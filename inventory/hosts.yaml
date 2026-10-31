@@ -1,0 +1,37 @@
+# Each group is a "category" of machine. A host gets every category it is
+# listed under, e.g. a laptop can be in gnome, notetaking and development.
+# Connection details and passwords go in inventory/host_vars/<host>/secrets.yaml
+# (ignored by git, see inventory/host_vars/secrets.yaml.example).
+all:
+  children:
+    desktop:
+      children:
+        gnome:
+          hosts:
+            hoopoe: {}
+        dwl:
+          hosts: {}
+    power:
+      children:
+        laptop:
+          hosts:
+            hoopoe: {}
+        server:
+          hosts: {}
+    nvidia:
+      hosts: {}
+    notetaking:
+      hosts:
+        hoopoe: {}
+    gaming:
+      hosts: {}
+    development:
+      hosts:
+        hoopoe: {}
+    docker:
+      hosts:
+        hoopoe: {}
+    virtualization:
+      children:
+        passthrough:
+          hosts: {}

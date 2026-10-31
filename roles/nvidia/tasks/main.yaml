@@ -1,0 +1,37 @@
+# The meta-package keeps headers in step with kernel updates so DKMS
+# rebuilds the module without manual work.
+- name: Install kernel headers
+  ansible.builtin.apt:
+    name: linux-headers-amd64
+    state: present
+    update_cache: true
+
+- name: Add the NVIDIA CUDA repository keyring
+  ansible.builtin.apt:
+    deb: "{{ nvidia_cuda_keyring_url }}"
+
+# Must be installed before the driver.
+- name: Pin the driver to branch {{ nvidia_driver_branch }}
+  ansible.builtin.apt:
+    name: "nvidia-driver-pinning-{{ nvidia_driver_branch }}"
+    state: present
+    update_cache: true
+
+- name: Check foreign architectures
+  ansible.builtin.command: dpkg --print-foreign-architectures
+  register: nvidia_foreign_archs
+  changed_when: false
+  check_mode: false
+  when: nvidia_i386_libs
+
+- name: Enable the i386 architecture
+  ansible.builtin.command: dpkg --add-architecture i386
+  when: nvidia_i386_libs and 'i386' not in nvidia_foreign_archs.stdout_lines
+  changed_when: true
+
+- name: Install the proprietary driver
+  ansible.builtin.apt:
+    name: "{{ ['cuda-drivers'] + (['libcuda1:i386', 'nvidia-driver-libs:i386'] if nvidia_i386_libs else []) }}"
+    state: present
+    update_cache: true
+  notify: Remind to reboot for the NVIDIA driver

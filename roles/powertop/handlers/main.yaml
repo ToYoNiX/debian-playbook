@@ -1,0 +1,5 @@
+- name: Restart powertop
+  ansible.builtin.systemd_service:
+    name: powertop.service
+    state: restarted
+    daemon_reload: true

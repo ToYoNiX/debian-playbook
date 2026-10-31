@@ -1,0 +1,24 @@
+- name: Upgrade apt packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: "{{ maintenance_apt_upgrade }}"
+
+- name: Remove packages that are no longer required
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+
+- name: Clean the apt cache
+  ansible.builtin.apt:
+    autoclean: true
+
+- name: Check for flatpak
+  ansible.builtin.stat:
+    path: /usr/bin/flatpak
+  register: maintenance_flatpak
+
+- name: Update flatpaks
+  ansible.builtin.command: flatpak update --noninteractive -y
+  register: maintenance_flatpak_update
+  changed_when: "'Nothing to do' not in maintenance_flatpak_update.stdout"
+  when: maintenance_flatpak.stat.exists

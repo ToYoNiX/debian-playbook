@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name={{ item.app_id }}
+X-XDP-Autostart={{ item.app_id }}
+{% if item.flatpak | default(true) %}
+Exec=flatpak run --command={{ item.command }} {{ item.app_id }}{{ (' ' ~ item.args) if item.args is defined else '' }}
+X-Flatpak={{ item.app_id }}
+{% else %}
+Exec={{ item.command }}{{ (' ' ~ item.args) if item.args is defined else '' }}
+{% endif %}

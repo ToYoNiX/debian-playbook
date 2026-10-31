@@ -1,0 +1,65 @@
+- name: Look up the home directory of {{ target_user }}
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ target_user }}"
+
+- name: Set the autostart directory
+  ansible.builtin.set_fact:
+    autostart_dir: "{{ getent_passwd[target_user][4] }}/.config/autostart"
+
+- name: Create the autostart directory
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.file:
+    path: "{{ autostart_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Add portal style entries
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.template:
+    src: portal.desktop.j2
+    dest: "{{ autostart_dir }}/{{ item.app_id }}.desktop"
+    mode: "0644"
+  loop: "{{ autostart_entries | selectattr('type', 'equalto', 'portal') | list }}"
+  loop_control:
+    label: "{{ item.app_id }}"
+
+- name: Add custom entries
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.template:
+    src: custom.desktop.j2
+    dest: "{{ autostart_dir }}/{{ item.file }}.desktop"
+    mode: "0644"
+  loop: "{{ autostart_entries | selectattr('type', 'equalto', 'custom') | list }}"
+  loop_control:
+    label: "{{ item.file }}"
+
+# Copied once so later edits to the copy are kept, then the flag is added
+# before the file forwarding marker (@@u) or at the end of Exec.
+- name: Copy app launchers
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.copy:
+    src: "{{ autostart_flatpak_applications }}/{{ item.app_id }}.desktop"
+    dest: "{{ autostart_dir }}/{{ item.app_id }}.desktop"
+    remote_src: true
+    force: false
+    mode: "0644"
+  loop: "{{ autostart_entries | selectattr('type', 'equalto', 'launcher') | list }}"
+  loop_control:
+    label: "{{ item.app_id }}"
+
+- name: Add the startup flag to copied launchers
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.lineinfile:
+    path: "{{ autostart_dir }}/{{ item.app_id }}.desktop"
+    regexp: '^Exec=((?:(?!{{ item.flag | regex_escape }}).)*?)( @@u %U @@| %U)$'
+    line: 'Exec=\1 {{ item.flag }}\2'
+    backrefs: true
+  loop: "{{ autostart_entries | selectattr('type', 'equalto', 'launcher') | list }}"
+  loop_control:
+    label: "{{ item.app_id }} {{ item.flag }}"

@@ -1,0 +1,11 @@
+ly_repo: https://codeberg.org/fairyglade/ly
+ly_version: v1.3.x
+ly_src_dir: /usr/local/src/ly
+
+ly_dependencies:
+  - brightnessctl
+  - build-essential
+  - libpam0g-dev
+  - libxcb-xkb-dev
+  - xauth
+  - xserver-xorg

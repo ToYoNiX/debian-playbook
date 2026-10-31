@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name={{ item.name }}
+Exec={{ item.exec }}
+Terminal=false
+{% for key, value in (item.fields | default({})).items() %}
+{{ key }}={{ value }}
+{% endfor %}

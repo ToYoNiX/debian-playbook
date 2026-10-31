@@ -1,0 +1,2 @@
+# {{ ansible_managed }}
+GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX {{ passthrough_iommu_param }} vfio-pci.ids={{ passthrough_vfio_ids | join(',') }}"

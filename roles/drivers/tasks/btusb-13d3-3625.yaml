@@ -1,0 +1,187 @@
+# The MediaTek MT7922 Bluetooth card with USB id 13d3:3625 (e.g. Mercusys
+# MA80XE) is missing from btusb's device table on kernels without upstream
+# commit ddd25808d4c2, so it is driven as a generic adapter. It then fails
+# with "hci0: Opcode 0x0c03 failed: -110" and no controller shows up.
+# https://github.com/Lucenx9/btusb-13d3-3625-dkms builds btusb with the id
+# added as a DKMS module. It is only applied when the card is present, the
+# running kernel's own btusb lacks the id and the failure is in the kernel
+# log, or when the module is already installed and just needs keeping up.
+
+- name: Check for the 13d3:3625 Bluetooth card
+  ansible.builtin.shell: |
+    for d in /sys/bus/usb/devices/*; do
+      [ -f "$d/idVendor" ] && [ "$(cat "$d/idVendor"):$(cat "$d/idProduct")" = "13d3:3625" ] && echo "$d"
+    done
+    true
+  register: drivers_btusb_card
+  changed_when: false
+  check_mode: false
+
+- name: Fix 13d3:3625 Bluetooth
+  when: drivers_btusb_card.stdout | length > 0
+  block:
+    # The id goes in btusb's quirks table, which is not exported as module
+    # aliases, so look for the usb_device_id entry itself (match flags,
+    # vendor and product, little-endian). Once DKMS is installed the kernel's
+    # own module is moved to DKMS's original_module backup.
+    - name: Check if the kernel's own btusb knows the card
+      ansible.builtin.shell: |
+        for f in /lib/modules/{{ ansible_kernel }}/kernel/drivers/bluetooth/btusb.ko \
+                 /lib/modules/{{ ansible_kernel }}/kernel/drivers/bluetooth/btusb.ko.* \
+                 /var/lib/dkms/btusb-13d3-3625/original_module/{{ ansible_kernel }}/*/btusb.ko \
+                 /var/lib/dkms/btusb-13d3-3625/original_module/{{ ansible_kernel }}/*/btusb.ko.*; do
+          case "$f" in *.origin) continue ;; esac
+          [ -f "$f" ] || continue
+          exec {{ ansible_python.executable }} -I - "$f" <<'PY'
+        import gzip, lzma, struct, sys
+        path = sys.argv[1]
+        opener = lzma.open if path.endswith(".xz") else gzip.open if path.endswith(".gz") else open
+        sys.exit(0 if struct.pack("<HHH", 0x0003, 0x13d3, 0x3625) in opener(path, "rb").read() else 1)
+        PY
+        done
+        echo "Could not find the kernel's own btusb module" >&2
+        exit 2
+      register: drivers_btusb_in_tree
+      changed_when: false
+      check_mode: false
+      failed_when: drivers_btusb_in_tree.rc not in [0, 1]
+
+    - name: Check btusb is built as a module
+      ansible.builtin.command: grep -qx CONFIG_BT_HCIBTUSB=m /boot/config-{{ ansible_kernel }}
+      register: drivers_btusb_config
+      changed_when: false
+      check_mode: false
+      failed_when: false
+
+    - name: Check the kernel log for the failure
+      ansible.builtin.command: >-
+        journalctl -k -b --no-pager -q --grep 'hci[0-9]+: Opcode 0x0c03 failed: -110'
+      register: drivers_btusb_error
+      changed_when: false
+      check_mode: false
+      failed_when: false
+
+    - name: Check for an installed btusb-13d3-3625 module
+      ansible.builtin.shell: command -v dkms >/dev/null && dkms status -m btusb-13d3-3625 || true
+      register: drivers_btusb_dkms
+      changed_when: false
+      check_mode: false
+
+    - name: Decide whether the fix applies
+      ansible.builtin.set_fact:
+        drivers_btusb_fix_wanted: >-
+          {{ drivers_btusb_in_tree.rc != 0 and drivers_btusb_config.rc == 0
+             and (drivers_btusb_error.rc == 0 or 'btusb-13d3-3625' in drivers_btusb_dkms.stdout) }}
+
+    - name: Show the checks
+      ansible.builtin.debug:
+        msg:
+          - "Card 13d3:3625: present"
+          - "Kernel btusb has the id: {{ drivers_btusb_in_tree.rc == 0 }}"
+          - "btusb is a module: {{ drivers_btusb_config.rc == 0 }}"
+          - "Opcode 0x0c03 failure in this boot's log: {{ drivers_btusb_error.rc == 0 }}"
+          - "DKMS module installed: {{ 'btusb-13d3-3625' in drivers_btusb_dkms.stdout }}"
+          - "Applying the fix: {{ drivers_btusb_fix_wanted }}"
+
+    - name: Note that the workaround is no longer needed
+      ansible.builtin.debug:
+        msg: >-
+          The running kernel's btusb now supports 13d3:3625. Remove the workaround with
+          dkms remove -m btusb-13d3-3625 --all, delete /usr/src/btusb-13d3-3625-*, then depmod -a.
+      when: drivers_btusb_in_tree.rc == 0 and 'btusb-13d3-3625' in drivers_btusb_dkms.stdout
+
+    - name: Build and install the DKMS module
+      when: drivers_btusb_fix_wanted
+      block:
+        - name: Install the build dependencies
+          ansible.builtin.apt:
+            name:
+              - build-essential
+              - curl
+              - dkms
+              - git
+              - "linux-headers-{{ ansible_kernel }}"
+              - patch
+              - perl
+            state: present
+
+        - name: Create a temp dir
+          ansible.builtin.tempfile:
+            state: directory
+          register: drivers_btusb_tmp
+
+        - name: Clone the workaround at the pinned commit
+          ansible.builtin.git:
+            repo: "{{ drivers_btusb_13d3_3625_repo }}"
+            dest: "{{ drivers_btusb_tmp.path }}"
+            version: "{{ drivers_btusb_13d3_3625_commit }}"
+
+        - name: Read the module version
+          ansible.builtin.slurp:
+            src: "{{ drivers_btusb_tmp.path }}/dkms.conf"
+          register: drivers_btusb_dkms_conf
+
+        - name: Set the module version
+          ansible.builtin.set_fact:
+            drivers_btusb_version: "{{ drivers_btusb_dkms_conf.content | b64decode | regex_search('PACKAGE_VERSION=\"([^\"]+)\"', '\\1') | first }}"
+
+        - name: Create /usr/src/btusb-13d3-3625-{{ drivers_btusb_version }}
+          ansible.builtin.file:
+            path: "/usr/src/btusb-13d3-3625-{{ drivers_btusb_version }}/patches"
+            state: directory
+            mode: "0755"
+
+        - name: Copy the module source
+          ansible.builtin.copy:
+            src: "{{ drivers_btusb_tmp.path }}/{{ item.file }}"
+            dest: "/usr/src/btusb-13d3-3625-{{ drivers_btusb_version }}/{{ item.file }}"
+            mode: "{{ item.mode }}"
+            remote_src: true
+          loop:
+            - { file: dkms.conf, mode: "0644" }
+            - { file: pre_build.sh, mode: "0755" }
+            - { file: patches/0001-btusb-add-13d3-3625.patch, mode: "0644" }
+          loop_control:
+            label: "{{ item.file }}"
+          register: drivers_btusb_source
+
+        - name: Remove other versions of the module
+          ansible.builtin.shell: >-
+            dkms remove -m btusb-13d3-3625 -v {{ item }} --all
+            && rm -rf /usr/src/btusb-13d3-3625-{{ item }}
+          changed_when: true
+          loop: >-
+            {{ drivers_btusb_dkms.stdout | regex_findall('btusb-13d3-3625/([^,:\s]+)') | unique
+               | reject('equalto', drivers_btusb_version) | list }}
+
+        - name: Check the module's DKMS state
+          ansible.builtin.command: dkms status -m btusb-13d3-3625 -v {{ drivers_btusb_version }}
+          register: drivers_btusb_state
+          changed_when: false
+          check_mode: false
+
+        # Same version but different files (the pinned commit changed),
+        # rebuild from scratch.
+        - name: Drop the old build after a source change
+          ansible.builtin.command: dkms remove -m btusb-13d3-3625 -v {{ drivers_btusb_version }} --all
+          when: drivers_btusb_source is changed and drivers_btusb_state.stdout | length > 0
+          changed_when: true
+          register: drivers_btusb_dropped
+
+        - name: Add the module to DKMS
+          ansible.builtin.command: dkms add -m btusb-13d3-3625 -v {{ drivers_btusb_version }}
+          when: drivers_btusb_state.stdout | length == 0 or drivers_btusb_dropped is changed
+          changed_when: true
+
+        - name: Build and install the module for {{ ansible_kernel }}
+          ansible.builtin.command: dkms install -m btusb-13d3-3625 -v {{ drivers_btusb_version }} -k {{ ansible_kernel }}
+          when: "'installed' not in drivers_btusb_state.stdout or drivers_btusb_dropped is changed"
+          changed_when: true
+          notify: Reload btusb
+
+      always:
+        - name: Remove the temp dir
+          ansible.builtin.file:
+            path: "{{ drivers_btusb_tmp.path }}"
+            state: absent
+          when: drivers_btusb_tmp.path is defined

@@ -1,0 +1,70 @@
+- name: Install extensions from apt and their dependencies
+  ansible.builtin.apt:
+    name: "{{ (gnome_extensions_apt | list) + gnome_extension_dependencies }}"
+    state: present
+
+- name: Pick the extensions.gnome.org extensions for this host
+  ansible.builtin.set_fact:
+    gnome_ego_wanted: >-
+      {{ gnome_extensions_ego
+         + ([] if 'laptop' in group_names else gnome_extensions_ego_desktop_only) }}
+
+# Display Brightness talks to monitors over DDC/CI through /dev/i2c-*.
+- name: Set up ddcutil for monitor brightness
+  when: "'laptop' not in group_names"
+  block:
+    - name: Install ddcutil
+      ansible.builtin.apt:
+        name: ddcutil
+        state: present
+
+    - name: Load i2c-dev at boot
+      ansible.builtin.copy:
+        content: "i2c-dev\n"
+        dest: /etc/modules-load.d/i2c-dev.conf
+        mode: "0644"
+
+    - name: Add the user to the i2c group
+      ansible.builtin.user:
+        name: "{{ target_user }}"
+        groups: i2c
+        append: true
+
+- name: Look up the home directory of {{ target_user }}
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ target_user }}"
+
+- name: Find the GNOME Shell version
+  ansible.builtin.command: gnome-shell --version
+  register: gnome_shell_version
+  changed_when: false
+  check_mode: false
+
+- name: Install extensions from extensions.gnome.org
+  ansible.builtin.include_tasks: extension.yaml
+  vars:
+    gnome_extensions_dir: "{{ getent_passwd[target_user][4] }}/.local/share/gnome-shell/extensions"
+    gnome_shell_major: "{{ gnome_shell_version.stdout | regex_search('([0-9]+)\\.', '\\1') | first }}"
+  loop: "{{ gnome_ego_wanted }}"
+  loop_control:
+    loop_var: gnome_extension_uuid
+
+# Adds to whatever is already enabled instead of replacing it, so extensions
+# turned on by hand stay on. Takes effect at the next login.
+- name: Read the enabled extensions
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.dconf:
+    key: /org/gnome/shell/enabled-extensions
+    state: read
+  register: gnome_enabled_extensions
+
+- name: Enable the extensions
+  become: true
+  become_user: "{{ target_user }}"
+  vars:
+    gnome_enabled_now: "{{ (gnome_enabled_extensions.value | default('[]', true) | regex_replace('^@as ', '')) | from_yaml }}"
+  community.general.dconf:
+    key: /org/gnome/shell/enabled-extensions
+    value: "{{ (gnome_enabled_now + (gnome_extensions_apt | dict2items | map(attribute='value') | list) + gnome_ego_wanted) | unique | to_json }}"

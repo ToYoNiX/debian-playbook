@@ -1,0 +1,4 @@
+- name: Install Go
+  ansible.builtin.apt:
+    name: "{{ go_packages }}"
+    state: present
