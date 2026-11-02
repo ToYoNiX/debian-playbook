@@ -17,7 +17,9 @@ all:
           hosts:
             hoopoe: {}
         server:
-          hosts: {}
+          hosts: 
+            orca: {}
+            fluffy: {}
     nvidia:
       hosts: {}
     notetaking:
@@ -30,7 +32,9 @@ all:
         hoopoe: {}
     docker:
       hosts:
+        orca: {}
         hoopoe: {}
+        fluffy: {}
     virtualization:
       children:
         passthrough:
