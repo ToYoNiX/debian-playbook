@@ -12,6 +12,7 @@ common_packages:
   - nethogs
   - nmap
   - nvme-cli
+  - resolvconf
   - smartmontools
   - sqlite3
   - tmux
