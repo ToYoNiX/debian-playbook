@@ -16,6 +16,7 @@ flatpak_apps:
   - org.inkscape.Inkscape
   - org.kicad.KiCad
   - org.libreoffice.LibreOffice
+  - org.qbittorrent.qBittorrent
   - org.telegram.desktop
   - se.sjoerd.Graphs
   - uk.org.greenend.chiark.sgtatham.putty
