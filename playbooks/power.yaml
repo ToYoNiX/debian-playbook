@@ -8,7 +8,7 @@
     - auto_cpufreq
     - battery
 
-- name: Servers
+- name: Server power management
   hosts: server
   become: true
   # A dry run (--check) installs nothing, so later steps that need those

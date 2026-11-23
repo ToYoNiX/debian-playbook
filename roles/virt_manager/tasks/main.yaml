@@ -1,0 +1,4 @@
+- name: Install virt-manager
+  ansible.builtin.apt:
+    name: "{{ virt_manager_packages }}"
+    state: present

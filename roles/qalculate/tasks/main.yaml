@@ -1,0 +1,4 @@
+- name: Install Qalculate!
+  community.general.flatpak:
+    name: "{{ qalculate_flatpak }}"
+    state: present

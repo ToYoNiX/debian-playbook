@@ -125,7 +125,7 @@
           ansible.builtin.set_fact:
             drivers_btusb_version: "{{ drivers_btusb_dkms_conf.content | b64decode | regex_search('PACKAGE_VERSION=\"([^\"]+)\"', '\\1') | first }}"
 
-        - name: Create /usr/src/btusb-13d3-3625-{{ drivers_btusb_version }}
+        - name: Create the module source directory
           ansible.builtin.file:
             path: "/usr/src/btusb-13d3-3625-{{ drivers_btusb_version }}/patches"
             state: directory

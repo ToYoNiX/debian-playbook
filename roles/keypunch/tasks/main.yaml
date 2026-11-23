@@ -1,0 +1,4 @@
+- name: Install Keypunch
+  community.general.flatpak:
+    name: "{{ keypunch_flatpak }}"
+    state: present

@@ -1,0 +1,4 @@
+- name: Install Postman
+  community.general.flatpak:
+    name: "{{ postman_flatpak }}"
+    state: present

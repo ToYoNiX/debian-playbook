@@ -9,6 +9,7 @@ all:
         gnome:
           hosts:
             hoopoe: {}
+            aorus: {}
         dwl:
           hosts: {}
     power:
@@ -17,25 +18,54 @@ all:
           hosts:
             hoopoe: {}
         server:
-          hosts: 
+          hosts:
             orca: {}
             fluffy: {}
     nvidia:
-      hosts: {}
+      hosts:
+        aorus: {}
     notetaking:
       hosts:
         hoopoe: {}
+        aorus: {}
     gaming:
-      hosts: {}
+      hosts:
+        aorus: {}
+    # FreeCAD and PrusaSlicer. Ansible group names can't start with a digit,
+    # so not "3d".
+    cad:
+      hosts:
+        aorus: {}
+    videoediting:
+      hosts:
+        aorus: {}
+    # Media and game streaming clients.
+    entertainment:
+      hosts:
+        hoopoe: {}
+        aorus: {}
+    # Hosts the HP printer is plugged into.
+    printing:
+      hosts:
+        aorus: {}
+    # Microcontrollers, keyboard firmware and Android flashing.
+    embedded:
+      hosts:
+        hoopoe: {}
+        aorus: {}
     development:
       hosts:
         hoopoe: {}
+        aorus: {}
     docker:
       hosts:
         orca: {}
         hoopoe: {}
         fluffy: {}
+        aorus: {}
     virtualization:
+      hosts:
+        aorus: {}
       children:
         passthrough:
           hosts: {}

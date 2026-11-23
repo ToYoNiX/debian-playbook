@@ -1,0 +1,9 @@
+# Bitwarden from flathub.
+bitwarden_flatpak: com.bitwarden.desktop
+
+# Started with the session, see roles/autostart/defaults/main.yaml.
+bitwarden_autostart:
+  - type: portal
+    app_id: com.bitwarden.desktop
+    command: bitwarden.sh
+    args: --autostart %U

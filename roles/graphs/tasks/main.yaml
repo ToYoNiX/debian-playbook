@@ -1,0 +1,4 @@
+- name: Install Graphs
+  community.general.flatpak:
+    name: "{{ graphs_flatpak }}"
+    state: present

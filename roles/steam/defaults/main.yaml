@@ -1,0 +1,12 @@
+# Steam from flathub.
+steam_flatpak: com.valvesoftware.Steam
+
+# Some games (many through Proton) crash when they run out of memory maps.
+steam_sysctl:
+  vm.max_map_count: 2147483642
+
+# Started in the tray with the session, see roles/autostart/defaults/main.yaml.
+steam_autostart:
+  - type: launcher
+    app_id: com.valvesoftware.Steam
+    flag: -silent

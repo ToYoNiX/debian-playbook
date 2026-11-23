@@ -1,0 +1,16 @@
+# Terraform from HashiCorp's apt repo, following
+# https://developer.hashicorp.com/terraform/install
+- name: Add the HashiCorp repository
+  ansible.builtin.deb822_repository:
+    name: hashicorp
+    types: deb
+    uris: https://apt.releases.hashicorp.com
+    suites: "{{ ansible_distribution_release }}"
+    components: main
+    signed_by: https://apt.releases.hashicorp.com/gpg
+
+- name: Install terraform
+  ansible.builtin.apt:
+    name: "{{ terraform_packages }}"
+    state: present
+    update_cache: true

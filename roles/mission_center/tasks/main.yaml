@@ -1,0 +1,9 @@
+- name: Install the host tools Mission Center uses
+  ansible.builtin.apt:
+    name: "{{ mission_center_packages }}"
+    state: present
+
+- name: Install Mission Center
+  community.general.flatpak:
+    name: "{{ mission_center_flatpak }}"
+    state: present

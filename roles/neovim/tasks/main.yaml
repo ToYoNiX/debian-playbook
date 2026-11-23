@@ -1,0 +1,47 @@
+- name: Pick the tarball for this architecture
+  ansible.builtin.set_fact:
+    neovim_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'x86_64' }}"
+
+- name: Create the Neovim directory
+  ansible.builtin.file:
+    path: "{{ neovim_root }}/{{ neovim_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Download Neovim {{ neovim_version }}
+  ansible.builtin.get_url:
+    url: "https://github.com/neovim/neovim/releases/download/{{ neovim_version }}/nvim-linux-{{ neovim_arch }}.tar.gz"
+    dest: "{{ neovim_root }}/nvim-{{ neovim_version }}-{{ neovim_arch }}.tar.gz"
+    checksum: "sha256:{{ neovim_sha256[neovim_arch] }}"
+    mode: "0644"
+
+- name: Unpack Neovim {{ neovim_version }}
+  ansible.builtin.unarchive:
+    src: "{{ neovim_root }}/nvim-{{ neovim_version }}-{{ neovim_arch }}.tar.gz"
+    dest: "{{ neovim_root }}/{{ neovim_version }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ neovim_root }}/{{ neovim_version }}/bin/nvim"
+
+- name: Link nvim into the PATH
+  ansible.builtin.file:
+    src: "{{ neovim_root }}/{{ neovim_version }}/bin/nvim"
+    dest: /usr/local/bin/nvim
+    state: link
+
+- name: Find older Neovim versions
+  ansible.builtin.find:
+    paths: "{{ neovim_root }}"
+    file_type: any
+    excludes:
+      - "{{ neovim_version }}"
+      - "nvim-{{ neovim_version }}-{{ neovim_arch }}.tar.gz"
+  register: neovim_old
+
+- name: Remove older Neovim versions
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ neovim_old.files }}"
+  loop_control:
+    label: "{{ item.path }}"

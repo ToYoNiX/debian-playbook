@@ -4,6 +4,8 @@
   ansible.builtin.import_playbook: playbooks/common.yaml
 - name: Power management
   ansible.builtin.import_playbook: playbooks/power.yaml
+- name: Servers
+  ansible.builtin.import_playbook: playbooks/server.yaml
 - name: NVIDIA drivers
   ansible.builtin.import_playbook: playbooks/nvidia.yaml
 - name: Virtualization
@@ -14,6 +16,16 @@
   ansible.builtin.import_playbook: playbooks/notetaking.yaml
 - name: Gaming
   ansible.builtin.import_playbook: playbooks/gaming.yaml
+- name: CAD and 3D printing
+  ansible.builtin.import_playbook: playbooks/cad.yaml
+- name: Video editing
+  ansible.builtin.import_playbook: playbooks/videoediting.yaml
+- name: Entertainment
+  ansible.builtin.import_playbook: playbooks/entertainment.yaml
+- name: Printing
+  ansible.builtin.import_playbook: playbooks/printing.yaml
+- name: Embedded
+  ansible.builtin.import_playbook: playbooks/embedded.yaml
 - name: Development
   ansible.builtin.import_playbook: playbooks/development.yaml
 - name: Docker

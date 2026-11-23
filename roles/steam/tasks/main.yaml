@@ -1,0 +1,18 @@
+- name: Install Steam
+  community.general.flatpak:
+    name: "{{ steam_flatpak }}"
+    state: present
+
+- name: Apply Steam sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-steam.conf
+    reload: true
+  loop: "{{ steam_sysctl | dict2items }}"
+
+- name: Start Steam with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ steam_autostart }}"

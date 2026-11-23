@@ -1,3 +1,22 @@
+# Everything in /var/lib/apt/lists except apt's lock file and its
+# partial/ download directory, apt-get update fetches the rest again.
+- name: Find the downloaded package lists
+  ansible.builtin.find:
+    paths: /var/lib/apt/lists
+    file_type: any
+    excludes: [lock, partial]
+  register: maintenance_apt_lists
+  when: maintenance_reset_apt_lists
+
+- name: Remove the downloaded package lists
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ maintenance_apt_lists.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: maintenance_reset_apt_lists
+
 - name: Upgrade apt packages
   ansible.builtin.apt:
     update_cache: true
@@ -8,9 +27,10 @@
     autoremove: true
     purge: true
 
-- name: Clean the apt cache
+# All downloaded .deb files, including the ones this upgrade just used.
+- name: Empty the apt package cache
   ansible.builtin.apt:
-    autoclean: true
+    clean: true
 
 - name: Check for flatpak
   ansible.builtin.stat:

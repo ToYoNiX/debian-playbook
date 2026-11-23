@@ -1,0 +1,17 @@
+- name: Install Syncthing
+  ansible.builtin.apt:
+    name: "{{ syncthing_packages }}"
+    state: present
+
+- name: Open Syncthing ports
+  ansible.builtin.include_role:
+    name: firewall
+    tasks_from: allow
+  vars:
+    firewall_rules: "{{ syncthing_firewall_rules }}"
+
+- name: Start Syncthing with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ syncthing_autostart }}"

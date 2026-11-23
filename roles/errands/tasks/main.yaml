@@ -1,0 +1,10 @@
+- name: Install Errands
+  community.general.flatpak:
+    name: "{{ errands_flatpak }}"
+    state: present
+
+- name: Start Errands with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ errands_autostart }}"

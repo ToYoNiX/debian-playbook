@@ -1,0 +1,4 @@
+- name: Install Extension Manager
+  community.general.flatpak:
+    name: "{{ extension_manager_flatpak }}"
+    state: present

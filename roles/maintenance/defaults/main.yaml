@@ -1,2 +1,6 @@
 # safe = apt upgrade, full = apt full-upgrade
 maintenance_apt_upgrade: safe
+
+# Throw away the downloaded package lists before updating, so apt fetches
+# them fresh. Fixes "Hash Sum mismatch" and other broken list errors.
+maintenance_reset_apt_lists: true

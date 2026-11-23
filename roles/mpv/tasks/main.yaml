@@ -1,0 +1,4 @@
+- name: Install mpv
+  ansible.builtin.apt:
+    name: "{{ mpv_packages }}"
+    state: present

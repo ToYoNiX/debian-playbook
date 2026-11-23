@@ -1,0 +1,5 @@
+# HP's printer drivers, cups for hosts that don't have it yet.
+hplip_packages:
+  - cups
+  - hplip
+  - hplip-gui   # hp-setup, hp-toolbox

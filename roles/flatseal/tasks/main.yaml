@@ -1,0 +1,4 @@
+- name: Install Flatseal
+  community.general.flatpak:
+    name: "{{ flatseal_flatpak }}"
+    state: present

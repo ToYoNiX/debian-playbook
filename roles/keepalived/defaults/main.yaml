@@ -1,0 +1,9 @@
+# Only installs keepalived and lets VRRP through, the configuration
+# (/etc/keepalived/keepalived.conf) is done by hand or by another playbook.
+keepalived_packages:
+  - keepalived
+
+# VRRP is its own IP protocol (112), not a port. Same as
+# "ufw allow from any to any proto vrrp".
+keepalived_firewall_rules:
+  - { proto: vrrp, comment: keepalived vrrp }

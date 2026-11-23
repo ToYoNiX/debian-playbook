@@ -1,0 +1,4 @@
+- name: Install ProtonUp-Qt
+  community.general.flatpak:
+    name: "{{ protonup_qt_flatpak }}"
+    state: present

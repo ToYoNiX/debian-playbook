@@ -1,0 +1,17 @@
+- name: Block the apt LibreOffice
+  ansible.builtin.template:
+    src: blocked.pref.j2
+    dest: /etc/apt/preferences.d/libreoffice-blocked.pref
+    mode: "0644"
+
+- name: Remove the apt LibreOffice
+  ansible.builtin.apt:
+    name: "{{ libreoffice_apt_packages }}"
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Install LibreOffice
+  community.general.flatpak:
+    name: "{{ libreoffice_flatpak }}"
+    state: present

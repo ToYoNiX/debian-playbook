@@ -1,0 +1,11 @@
+- name: Install keepalived
+  ansible.builtin.apt:
+    name: "{{ keepalived_packages }}"
+    state: present
+
+- name: Allow VRRP
+  ansible.builtin.include_role:
+    name: firewall
+    tasks_from: allow
+  vars:
+    firewall_rules: "{{ keepalived_firewall_rules }}"

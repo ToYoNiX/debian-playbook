@@ -1,0 +1,4 @@
+- name: Install KiCad
+  community.general.flatpak:
+    name: "{{ kicad_flatpak }}"
+    state: present

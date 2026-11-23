@@ -1,0 +1,4 @@
+# ovmf is the UEFI firmware for guests.
+qemu_packages:
+  - qemu-system-x86
+  - ovmf

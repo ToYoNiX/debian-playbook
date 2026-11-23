@@ -1,0 +1,4 @@
+- name: Install yt-dlp
+  ansible.builtin.apt:
+    name: "{{ yt_dlp_packages }}"
+    state: present

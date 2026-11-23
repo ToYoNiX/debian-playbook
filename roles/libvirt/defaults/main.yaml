@@ -1,0 +1,29 @@
+libvirt_packages:
+  - bridge-utils
+  - libvirt-clients
+  - libvirt-daemon-config-network
+  - libvirt-daemon-system
+
+# Users allowed to manage VMs without sudo.
+libvirt_users:
+  - "{{ target_user }}"
+
+# Following the libvirt section of the RisingPrism single GPU passthrough
+# guide, https://gitlab.com/risingprismtv/single-gpu-passthrough/-/wikis/4)-Configuration-of-libvirt
+
+# libvirtd.conf: the libvirt group can use the system socket (virt-manager
+# without a password prompt), and a log file for troubleshooting VMs.
+libvirt_daemon_settings:
+  unix_sock_group: libvirt
+  unix_sock_rw_perms: "0770"
+  log_filters: "3:qemu 1:libvirt"
+  log_outputs: "2:file:/var/log/libvirt/libvirtd.log"
+
+# qemu.conf: run VMs as this user and group instead of root, so the disk
+# images and ISOs they use stay owned by you. Debian gives every user a group
+# of the same name, set the group by hand if yours is different.
+libvirt_qemu_user: "{{ target_user }}"
+libvirt_qemu_group: "{{ target_user }}"
+
+# Start the NAT network VMs use by default with the host.
+libvirt_default_network_autostart: true

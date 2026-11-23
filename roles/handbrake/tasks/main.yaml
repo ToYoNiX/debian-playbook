@@ -1,0 +1,4 @@
+- name: Install HandBrake
+  community.general.flatpak:
+    name: "{{ handbrake_flatpak }}"
+    state: present

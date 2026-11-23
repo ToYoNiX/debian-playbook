@@ -1,0 +1,12 @@
+# Neovim from the official release tarball, Debian's package is too old.
+# Pinned with checksums so every run installs the same build, bump the
+# version and checksums to update (sha256 digests are on the release page,
+# https://github.com/neovim/neovim/releases).
+neovim_version: v0.12.6
+neovim_sha256:
+  x86_64: 474430d53e6264f6d6dd18db42d6dc9df3a1b56ca9e88a325bbf860e1a811d87
+  arm64: 8f1f64a0bdb97247034038c3823c6cbad5bdf9ecd5751b85494b71c3ee04c815
+
+# Each version is unpacked to its own directory under here and
+# /usr/local/bin/nvim points at the current one.
+neovim_root: /opt/neovim

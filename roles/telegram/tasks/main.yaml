@@ -1,0 +1,4 @@
+- name: Install Telegram
+  community.general.flatpak:
+    name: "{{ telegram_flatpak }}"
+    state: present

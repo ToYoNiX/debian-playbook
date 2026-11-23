@@ -1,0 +1,10 @@
+- name: Install Bitwarden
+  community.general.flatpak:
+    name: "{{ bitwarden_flatpak }}"
+    state: present
+
+- name: Start Bitwarden with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ bitwarden_autostart }}"

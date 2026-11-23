@@ -1,0 +1,4 @@
+- name: Install Kdenlive
+  community.general.flatpak:
+    name: "{{ kdenlive_flatpak }}"
+    state: present

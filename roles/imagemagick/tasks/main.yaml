@@ -1,0 +1,4 @@
+- name: Install ImageMagick
+  ansible.builtin.apt:
+    name: "{{ imagemagick_packages }}"
+    state: present

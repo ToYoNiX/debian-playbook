@@ -1,0 +1,4 @@
+- name: Install pandoc
+  ansible.builtin.apt:
+    name: "{{ pandoc_packages }}"
+    state: present

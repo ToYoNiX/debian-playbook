@@ -1,0 +1,4 @@
+- name: Install QEMU
+  ansible.builtin.apt:
+    name: "{{ qemu_packages }}"
+    state: present

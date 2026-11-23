@@ -28,11 +28,6 @@
     name: "{{ gnome_packages }}"
     state: present
 
-- name: Install GNOME flatpaks
-  community.general.flatpak:
-    name: "{{ gnome_flatpaks }}"
-    state: present
-
 - name: Install GNOME extensions
   ansible.builtin.import_tasks: extensions.yaml
 
@@ -50,9 +45,3 @@
     tasks_from: allow
   vars:
     firewall_rules: "{{ gnome_firewall_rules }}"
-
-- name: Start Geary and Errands with the session
-  ansible.builtin.include_role:
-    name: autostart
-  vars:
-    autostart_entries: "{{ gnome_autostart }}"

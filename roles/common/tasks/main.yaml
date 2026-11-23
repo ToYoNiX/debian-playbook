@@ -38,14 +38,6 @@
     enabled: true
     state: started
 
-- name: Apply sysctl settings
-  ansible.posix.sysctl:
-    name: "{{ item.key }}"
-    value: "{{ item.value }}"
-    sysctl_file: /etc/sysctl.d/99-ansible.conf
-    reload: true
-  loop: "{{ common_sysctl | dict2items }}"
-
 - name: Set the git identity
   become: true
   become_user: "{{ target_user }}"

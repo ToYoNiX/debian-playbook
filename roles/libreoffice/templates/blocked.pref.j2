@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# Replaced by the flatpak. Blocked so apt does not pull it back in, e.g. the
+# gnome metapackage depends on LibreOffice.
+{% for pattern in libreoffice_apt_packages %}
+
+Package: {{ pattern }}
+Pin: release *
+Pin-Priority: -1
+{% endfor %}

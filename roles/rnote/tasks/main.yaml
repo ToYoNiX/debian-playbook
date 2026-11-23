@@ -1,0 +1,4 @@
+- name: Install Rnote
+  community.general.flatpak:
+    name: "{{ rnote_flatpak }}"
+    state: present

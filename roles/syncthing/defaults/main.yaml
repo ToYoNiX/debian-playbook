@@ -1,0 +1,20 @@
+syncthing_packages:
+  - syncthing
+
+syncthing_firewall_rules:
+  - { port: 22000, proto: tcp, comment: syncthing }
+  - { port: 22000, proto: udp, comment: syncthing }
+  - { port: 21027, proto: udp, comment: syncthing discovery }
+
+# Started with the session, see roles/autostart/defaults/main.yaml.
+syncthing_autostart:
+  - type: custom
+    file: syncthing-start
+    name: Start Syncthing
+    exec: syncthing serve --no-browser --logfile=default
+    fields:
+      GenericName: File synchronization
+      Comment: Starts the main syncthing process in the background.
+      Icon: syncthing
+      Keywords: synchronization;daemon;
+      Categories: Network;FileTransfer;P2P

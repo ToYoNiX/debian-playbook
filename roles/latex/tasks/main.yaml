@@ -1,0 +1,4 @@
+- name: Install LaTeX
+  ansible.builtin.apt:
+    name: "{{ latex_packages }}"
+    state: present

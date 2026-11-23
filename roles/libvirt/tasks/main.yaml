@@ -1,0 +1,62 @@
+- name: Install libvirt
+  ansible.builtin.apt:
+    name: "{{ libvirt_packages }}"
+    state: present
+
+- name: Configure the libvirt daemon
+  ansible.builtin.lineinfile:
+    path: /etc/libvirt/libvirtd.conf
+    regexp: '^#?\s*{{ item.key }}\s*='
+    line: '{{ item.key }} = "{{ item.value }}"'
+  loop: "{{ libvirt_daemon_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify: Restart libvirt
+
+# Matches "user =" or "#user =" at the start of a line, not the indented
+# examples above it.
+- name: Run VMs as {{ libvirt_qemu_user }}
+  ansible.builtin.lineinfile:
+    path: /etc/libvirt/qemu.conf
+    regexp: '^#?{{ item.key }}\s*='
+    line: '{{ item.key }} = "{{ item.value }}"'
+  loop:
+    - { key: user, value: "{{ libvirt_qemu_user }}" }
+    - { key: group, value: "{{ libvirt_qemu_group }}" }
+  loop_control:
+    label: "{{ item.key }} = {{ item.value }}"
+  notify: Restart libvirt
+
+- name: Enable libvirt
+  ansible.builtin.service:
+    name: libvirtd
+    enabled: true
+    state: started
+
+- name: Add users to the libvirt and kvm groups
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: [libvirt, kvm]
+    append: true
+  loop: "{{ libvirt_users }}"
+
+- name: Check the default network
+  ansible.builtin.command: virsh --connect qemu:///system net-info default
+  register: libvirt_default_network
+  changed_when: false
+  check_mode: false
+  when: libvirt_default_network_autostart
+
+- name: Autostart the default network
+  ansible.builtin.command: virsh --connect qemu:///system net-autostart default
+  changed_when: true
+  when:
+    - libvirt_default_network_autostart
+    - libvirt_default_network.stdout is not search('Autostart:\\s+yes')
+
+- name: Start the default network
+  ansible.builtin.command: virsh --connect qemu:///system net-start default
+  changed_when: true
+  when:
+    - libvirt_default_network_autostart
+    - libvirt_default_network.stdout is not search('Active:\\s+yes')

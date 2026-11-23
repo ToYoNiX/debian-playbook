@@ -1,0 +1,4 @@
+- name: Install GDM Settings
+  community.general.flatpak:
+    name: "{{ gdm_settings_flatpak }}"
+    state: present

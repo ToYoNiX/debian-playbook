@@ -1,0 +1,5 @@
+# MangoHud must match the freedesktop version each app's runtime expects,
+# check with: flatpak info --show-metadata <app> | grep -A1 VulkanLayer
+mangohud_branches:
+  - "25.08"  # Bottles (org.gnome.Platform 50)
+  - "26.08"  # Steam (org.freedesktop.Platform 26.08)

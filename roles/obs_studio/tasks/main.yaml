@@ -1,0 +1,4 @@
+- name: Install OBS Studio
+  community.general.flatpak:
+    name: "{{ obs_studio_flatpak }}"
+    state: present

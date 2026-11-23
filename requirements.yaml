@@ -1,3 +1,5 @@
 collections:
   - name: ansible.posix
+  # 10.3.0 added proto: vrrp to the ufw module (keepalived role).
   - name: community.general
+    version: ">=10.3.0"

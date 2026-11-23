@@ -1,0 +1,4 @@
+- name: Install Google Chrome
+  community.general.flatpak:
+    name: "{{ chrome_flatpak }}"
+    state: present

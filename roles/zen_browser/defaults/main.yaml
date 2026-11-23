@@ -1,0 +1,5 @@
+# Zen Browser from flathub.
+zen_browser_flatpak: app.zen_browser.zen
+
+# Make it target_user's default browser.
+zen_browser_default: true

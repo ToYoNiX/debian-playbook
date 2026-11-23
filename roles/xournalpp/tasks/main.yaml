@@ -1,0 +1,4 @@
+- name: Install Xournal++
+  ansible.builtin.apt:
+    name: "{{ xournalpp_packages }}"
+    state: present

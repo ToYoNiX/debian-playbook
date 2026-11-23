@@ -5,4 +5,8 @@
   # packages fail. Keep going so the whole run is shown, real runs still stop.
   ignore_errors: "{{ ansible_check_mode }}"
   roles:
-    - notetaking
+    - latex
+    - xournalpp
+    - obsidian
+    - rnote
+    - pandoc

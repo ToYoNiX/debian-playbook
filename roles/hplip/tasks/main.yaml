@@ -1,0 +1,11 @@
+- name: Install CUPS and the HP printer drivers
+  ansible.builtin.apt:
+    name: "{{ hplip_packages }}"
+    state: present
+
+# Add and manage printers without a sudo prompt.
+- name: Add the user to the lpadmin group
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    groups: lpadmin
+    append: true

@@ -1,4 +1,0 @@
-- name: Install note-taking flatpaks
-  community.general.flatpak:
-    name: "{{ notetaking_flatpaks }}"
-    state: present

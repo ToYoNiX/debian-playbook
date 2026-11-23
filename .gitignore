@@ -1,6 +1,3 @@
-# Old flat inventory, replaced by inventory/.
-hosts
-
 # Per-host connection details and passwords.
 inventory/host_vars/*/secrets.yaml
 # Vault password files, in case one is kept here instead of in ~.

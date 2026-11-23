@@ -1,0 +1,3 @@
+# Flashes STM32 chips over their serial bootloader.
+stm32flash_packages:
+  - stm32flash

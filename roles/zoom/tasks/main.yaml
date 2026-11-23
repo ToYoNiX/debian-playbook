@@ -1,0 +1,4 @@
+- name: Install Zoom
+  community.general.flatpak:
+    name: "{{ zoom_flatpak }}"
+    state: present

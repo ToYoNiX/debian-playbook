@@ -1,0 +1,4 @@
+- name: Install adb
+  ansible.builtin.apt:
+    name: "{{ adb_packages }}"
+    state: present

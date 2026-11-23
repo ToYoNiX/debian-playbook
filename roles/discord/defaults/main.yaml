@@ -1,0 +1,8 @@
+# Discord from flathub.
+discord_flatpak: com.discordapp.Discord
+
+# Started minimized with the session, see roles/autostart/defaults/main.yaml.
+discord_autostart:
+  - type: launcher
+    app_id: com.discordapp.Discord
+    flag: --start-minimized

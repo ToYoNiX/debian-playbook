@@ -1,0 +1,10 @@
+# Errands from flathub.
+errands_flatpak: io.github.mrvladus.List
+
+# Started in the background with the session for reminders, see
+# roles/autostart/defaults/main.yaml.
+errands_autostart:
+  - type: portal
+    app_id: io.github.mrvladus.List
+    command: errands
+    args: --gapplication-service

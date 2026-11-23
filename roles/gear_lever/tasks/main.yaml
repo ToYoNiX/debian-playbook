@@ -1,0 +1,4 @@
+- name: Install Gear Lever
+  community.general.flatpak:
+    name: "{{ gear_lever_flatpak }}"
+    state: present

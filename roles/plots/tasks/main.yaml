@@ -1,0 +1,4 @@
+- name: Install Plots
+  community.general.flatpak:
+    name: "{{ plots_flatpak }}"
+    state: present

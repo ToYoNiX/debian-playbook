@@ -8,8 +8,11 @@
     - cpp
     - go
     - zig
-    - arduino
     - gh
     - vscode
-    - qmk
+    - neovim
+    - inotify
+    - postman
+    - drawio
     - ansible
+    - terraform

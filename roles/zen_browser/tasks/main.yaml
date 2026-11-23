@@ -1,0 +1,28 @@
+- name: Install Zen Browser
+  community.general.flatpak:
+    name: "{{ zen_browser_flatpak }}"
+    state: present
+
+- name: Look up the home directory of {{ target_user }}
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ target_user }}"
+  when: zen_browser_default
+
+# The same entries "Default Applications" in GNOME Settings writes.
+- name: Set Zen as the default browser
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.ini_file:
+    path: "{{ getent_passwd[target_user][4] }}/.config/mimeapps.list"
+    section: Default Applications
+    option: "{{ item }}"
+    value: "{{ zen_browser_flatpak }}.desktop"
+    no_extra_spaces: true
+    mode: "0644"
+  loop:
+    - application/xhtml+xml
+    - text/html
+    - x-scheme-handler/http
+    - x-scheme-handler/https
+  when: zen_browser_default

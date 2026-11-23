@@ -1,0 +1,4 @@
+- name: Install qBittorrent
+  community.general.flatpak:
+    name: "{{ qbittorrent_flatpak }}"
+    state: present

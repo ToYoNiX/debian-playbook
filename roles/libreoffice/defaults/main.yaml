@@ -1,0 +1,6 @@
+# LibreOffice from flathub.
+libreoffice_flatpak: org.libreoffice.LibreOffice
+
+# The apt build, removed and blocked before the flatpak goes in.
+libreoffice_apt_packages:
+  - "libreoffice*"

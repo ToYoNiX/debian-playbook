@@ -1,0 +1,4 @@
+# texlive-publishers has the journal and conference classes (IEEEtran, ...).
+latex_packages:
+  - texlive
+  - texlive-publishers

@@ -13,13 +13,15 @@ inventory/
   hosts.yaml        groups (categories) and the hosts in them
   group_vars/       settings per category, all/ applies everywhere
   host_vars/        settings per host
-roles/              one role per feature, its options in defaults/main.yaml
+roles/              one role per app or tool, its options in defaults/main.yaml
 playbooks/          one playbook per category, applies roles to that group
 site.yaml           imports every category playbook in dependency order
 library/            custom modules
 ```
 
-Categories: `desktop` (with `gnome` and `dwl` under it), `power` (with `laptop` and `server` under it), `nvidia`, `notetaking`, `gaming`, `development`, `docker` and `virtualization` (with `passthrough` under it). A host can be in as many as it needs.
+Categories: `desktop` (with `gnome` and `dwl` under it), `power` (with `laptop` and `server` under it, `server` also has its own playbook for server-only roles like `keepalived`), `nvidia`, `notetaking`, `gaming`, `cad`, `videoediting`, `entertainment`, `printing`, `embedded`, `development`, `docker` and `virtualization` (with `passthrough` under it). A host can be in as many as it needs.
+
+A role is never a category. Each category's playbook lists the roles of the apps and tools it gets, e.g. `virtualization` runs `qemu`, `libvirt` and `virt_manager`. An app's role holds everything about it (package or flatpak id, autostart entry, firewall ports), so switching it between apt and flatpak only touches that role.
 
 Roles that need ports open declare them in their defaults and open them through the `firewall` role, so a port is only open on hosts that run that role.
 

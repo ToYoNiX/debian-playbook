@@ -1,0 +1,3 @@
+# Converts documents, PDF output goes through LaTeX (the latex role).
+pandoc_packages:
+  - pandoc

@@ -1,0 +1,4 @@
+- name: Install Decoder
+  community.general.flatpak:
+    name: "{{ decoder_flatpak }}"
+    state: present

@@ -1,0 +1,4 @@
+- name: Install PuTTY
+  community.general.flatpak:
+    name: "{{ putty_flatpak }}"
+    state: present

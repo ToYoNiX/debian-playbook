@@ -1,0 +1,5 @@
+fonts_packages:
+  - fonts-font-awesome
+  - fonts-noto-cjk
+  - fonts-noto-color-emoji
+  - fonts-noto-extra

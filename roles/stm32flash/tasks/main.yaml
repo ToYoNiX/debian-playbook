@@ -1,0 +1,4 @@
+- name: Install stm32flash
+  ansible.builtin.apt:
+    name: "{{ stm32flash_packages }}"
+    state: present

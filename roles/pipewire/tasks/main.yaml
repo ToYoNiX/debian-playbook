@@ -1,0 +1,17 @@
+# apt_repository skips the line if it is already in any sources file, so
+# machines that have backports enabled by hand do not get a duplicate.
+- name: Enable backports
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ {{ ansible_distribution_release }}-backports main contrib non-free non-free-firmware"
+    filename: debian-backports
+  when: pipewire_backports
+
+# latest, not present: present would keep the stable versions that are
+# already installed instead of moving them to backports.
+- name: Install PipeWire from backports  # noqa: package-latest
+  ansible.builtin.apt:
+    name: "{{ pipewire_packages }}"
+    state: latest
+    default_release: "{{ ansible_distribution_release }}-backports"
+    update_cache: true
+  when: pipewire_backports

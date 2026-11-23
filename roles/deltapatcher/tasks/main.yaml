@@ -1,0 +1,4 @@
+- name: Install DeltaPatcher
+  community.general.flatpak:
+    name: "{{ deltapatcher_flatpak }}"
+    state: present

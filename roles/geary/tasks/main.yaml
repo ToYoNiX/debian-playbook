@@ -1,0 +1,18 @@
+- name: Install Geary
+  ansible.builtin.apt:
+    name: "{{ geary_packages }}"
+    state: present
+
+# Geary's "Watch for new mail when closed".
+- name: Keep Geary running in the background
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.dconf:
+    key: /org/gnome/Geary/run-in-background
+    value: "true"
+
+- name: Start Geary with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ geary_autostart }}"

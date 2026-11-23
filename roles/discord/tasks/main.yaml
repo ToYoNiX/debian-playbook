@@ -1,0 +1,10 @@
+- name: Install Discord
+  community.general.flatpak:
+    name: "{{ discord_flatpak }}"
+    state: present
+
+- name: Start Discord with the session
+  ansible.builtin.include_role:
+    name: autostart
+  vars:
+    autostart_entries: "{{ discord_autostart }}"

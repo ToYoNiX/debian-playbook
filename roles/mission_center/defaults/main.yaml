@@ -1,0 +1,10 @@
+# Mission Center from flathub.
+mission_center_flatpak: io.missioncenter.MissionCenter
+
+# Host tools Mission Center's Magpie setup script uses: setcap gives nethogs
+# the capabilities for per-process network usage, sensors-detect finds the
+# temperature sensors.
+mission_center_packages:
+  - libcap2-bin   # setcap
+  - lm-sensors    # sensors-detect
+  - nethogs

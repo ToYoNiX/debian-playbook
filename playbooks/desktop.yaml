@@ -5,11 +5,32 @@
   # packages fail. Keep going so the whole run is shown, real runs still stop.
   ignore_errors: "{{ ansible_check_mode }}"
   roles:
-    - desktop
-    - flatpak
-    - role: autostart
-      vars:
-        autostart_entries: "{{ desktop_autostart | default([]) }}"
+    - pipewire
+    - fonts
+    - libreoffice
+    - gparted
+    - imagemagick
+    - mpv
+    - yt_dlp
+    - syncthing
+    - zen_browser
+    - bitwarden
+    - chrome
+    - discord
+    - flatseal
+    - gear_lever
+    - graphs
+    - handbrake
+    - inkscape
+    - keypunch
+    - mission_center
+    - obs_studio
+    - plots
+    - putty
+    - qalculate
+    - qbittorrent
+    - telegram
+    - zoom
 
 - name: GNOME desktops
   hosts: gnome
@@ -19,6 +40,11 @@
   ignore_errors: "{{ ansible_check_mode }}"
   roles:
     - gnome
+    - extension_manager
+    - decoder
+    - gdm_settings
+    - errands
+    - geary
 
 - name: Desktops running dwl
   hosts: dwl

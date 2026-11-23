@@ -1,0 +1,4 @@
+- name: Install Inkscape
+  community.general.flatpak:
+    name: "{{ inkscape_flatpak }}"
+    state: present

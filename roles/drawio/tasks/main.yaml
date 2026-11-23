@@ -1,0 +1,4 @@
+- name: Install draw.io
+  community.general.flatpak:
+    name: "{{ drawio_flatpak }}"
+    state: present

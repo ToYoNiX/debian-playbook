@@ -1,0 +1,4 @@
+- name: Install mkbootimg
+  ansible.builtin.apt:
+    name: "{{ mkbootimg_packages }}"
+    state: present

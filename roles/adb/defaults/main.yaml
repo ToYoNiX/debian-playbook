@@ -1,0 +1,3 @@
+# Android debug bridge.
+adb_packages:
+  - adb

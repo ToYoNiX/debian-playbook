@@ -1,0 +1,4 @@
+- name: Install Moonlight
+  community.general.flatpak:
+    name: "{{ moonlight_flatpak }}"
+    state: present

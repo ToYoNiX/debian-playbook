@@ -1,0 +1,13 @@
+# From apt, the flatpak breaks dark mode on Debian 13.
+geary_packages:
+  - geary
+  - python3-psutil  # needed by the dconf module
+
+# Started in the background with the session to watch for new mail, see
+# roles/autostart/defaults/main.yaml.
+geary_autostart:
+  - type: portal
+    app_id: org.gnome.Geary
+    command: geary
+    args: --gapplication-service
+    flatpak: false
