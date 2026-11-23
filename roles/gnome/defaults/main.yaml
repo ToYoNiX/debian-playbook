@@ -61,6 +61,12 @@ gnome_dconf:
   # GNOME Software's "Automatic Updates", updates are still shown, just not
   # downloaded and installed in the background.
   /org/gnome/software/download-updates: "false"
+  # Mutter's experimental features. variable-refresh-rate adds the "Variable
+  # Refresh Rate" toggle in Settings > Displays for VRR capable monitors (it
+  # still has to be turned on there per monitor). The other two are the
+  # fractional scaling ones; this key is the whole list, so they're kept here.
+  /org/gnome/mutter/experimental-features: >-
+    ['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
   /org/gnome/shell/favorite-apps: >-
     ['app.zen_browser.zen.desktop', 'com.bitwarden.desktop.desktop', 'org.gnome.Geary.desktop',
     'org.gnome.Calendar.desktop', 'io.github.mrvladus.List.desktop', 'org.gnome.TextEditor.desktop',
