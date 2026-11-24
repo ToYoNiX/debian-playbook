@@ -94,45 +94,58 @@ import os
 from ansible.module_utils.basic import AnsibleModule
 
 
+def parse_env_line(raw_line):
+    """Return (key, value) for a KEY=VALUE line, or None for anything else
+    (comments, blank lines, lines without a key)."""
+    stripped = raw_line.strip()
+    if not stripped or stripped.startswith("#") or "=" not in stripped:
+        return None
+    key, _, value = stripped.partition("=")
+    key = key.strip()
+    if not key:
+        return None
+    return key, value.strip()
+
+
 def parse_env_lines(lines):
-    """Turn a list of raw file lines into an ordered dict of key -> value,
-    preserving any lines that aren't valid KEY=VALUE pairs as-is (comments,
-    blank lines) in a separate passthrough list keyed by their position.
-    """
+    """Dict of key -> value for every KEY=VALUE line, the last one winning."""
     parsed = {}
-    order = []  # preserves first-seen order of keys
-    passthrough = []  # (index, raw_line) for lines we don't touch
+    for raw_line in lines:
+        entry = parse_env_line(raw_line)
+        if entry:
+            parsed[entry[0]] = entry[1]
+    return parsed
 
-    for idx, raw_line in enumerate(lines):
-        line = raw_line.rstrip("\n")
-        stripped = line.strip()
 
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            passthrough.append((idx, line))
+def update_env_lines(lines, key, value, state):
+    """Return (new_lines, changed). Only lines for key are touched, every
+    other line (comments, blank lines, other keys) is kept exactly as it was.
+    The first line for key is updated in place and any later duplicates are
+    dropped. A missing key is appended at the end."""
+    wanted = "{0}={1}".format(key, value) if state == 'present' else None
+    new_lines = []
+    changed = False
+    seen = False
+
+    for line in lines:
+        entry = parse_env_line(line)
+        if entry is None or entry[0] != key:
+            new_lines.append(line)
             continue
-
-        key, _, value = stripped.partition("=")
-        key = key.strip()
-        value = value.strip()
-
-        if not key:
-            passthrough.append((idx, line))
+        if wanted is None or seen:
+            changed = True
             continue
+        seen = True
+        if entry[1] != value:
+            changed = True
+            line = wanted
+        new_lines.append(line)
 
-        if key not in parsed:
-            order.append(key)
-        parsed[key] = value
+    if wanted is not None and not seen:
+        new_lines.append(wanted)
+        changed = True
 
-    return parsed, order, passthrough
-
-
-def render_env_lines(parsed, order):
-    """Render dict back into KEY=VALUE lines, keeping original key order,
-    with any newly added keys appended at the end."""
-    lines = []
-    for key in order:
-        lines.append("{0}={1}".format(key, parsed[key]))
-    return lines
+    return new_lines, changed
 
 
 def run_module():
@@ -176,34 +189,17 @@ def run_module():
     else:
         raw_lines = []
 
-    parsed, order, passthrough = parse_env_lines(raw_lines)
-    result['before'] = dict(parsed)
+    lines = [line.rstrip("\n") for line in raw_lines]
+    new_lines, changed = update_env_lines(lines, key, value, state)
 
-    changed = False
-
-    if state == 'present':
-        if parsed.get(key) != value:
-            changed = True
-        if key not in parsed:
-            order.append(key)
-        parsed[key] = value
-    else:  # absent
-        if key in parsed:
-            del parsed[key]
-            order = [k for k in order if k != key]
-            changed = True
-
-    result['after'] = dict(parsed)
+    result['before'] = parse_env_lines(lines)
+    result['after'] = parse_env_lines(new_lines)
     result['changed'] = changed
 
     # Nothing to do — bail out before touching the filesystem.
-    if not changed:
+    if not changed or module.check_mode:
         module.exit_json(**result)
 
-    if module.check_mode:
-        module.exit_json(**result)
-
-    new_lines = render_env_lines(parsed, order)
     new_content = "\n".join(new_lines) + ("\n" if new_lines else "")
 
     if backup and os.path.exists(path):

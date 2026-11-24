@@ -37,7 +37,7 @@
   community.general.dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
-  loop: "{{ gnome_dconf | dict2items }}"
+  loop: "{{ gnome_dconf | combine(gnome_extension_dconf) | dict2items }}"
 
 # Same UPower check as the battery role: system batteries show up as
 # battery_*, while mice, headsets and UPSes get their own prefixes.

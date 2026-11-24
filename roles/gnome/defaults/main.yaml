@@ -11,32 +11,65 @@ gnome_packages:
   - papirus-icon-theme
   - python3-psutil        # needed by the dconf module
 
-# Extensions packaged by Debian, with the uuid to enable.
-gnome_extensions_apt:
+# Each extension with everything it needs:
+#   uuid          what gets enabled
+#   apt           the Debian package, without it it comes from extensions.gnome.org
+#   packages      extra apt packages it needs
+#   desktop_only  skipped on laptops
+#   dconf         where its settings live, needed with settings
+#   settings      its dconf settings, only applied where it is installed
+gnome_extensions:
   # Debian ships it under its Ubuntu uuid, not the extensions.gnome.org one.
-  gnome-shell-extension-appindicator: ubuntu-appindicators@ubuntu.com
-  gnome-shell-extension-caffeine: caffeine@patapon.info
-  gnome-shell-extension-dashtodock: dash-to-dock@micxgx.gmail.com
-  gnome-shell-extension-gsconnect: gsconnect@andyholmes.github.io
+  - uuid: ubuntu-appindicators@ubuntu.com
+    apt: gnome-shell-extension-appindicator
+  - uuid: caffeine@patapon.info
+    apt: gnome-shell-extension-caffeine
+  # Dash to Dock, without the monitor it is pinned to on aorus.
+  - uuid: dash-to-dock@micxgx.gmail.com
+    apt: gnome-shell-extension-dashtodock
+    dconf: /org/gnome/shell/extensions/dash-to-dock
+    settings:
+      animation-time: "0.2"
+      apply-custom-theme: "false"
+      autohide: "true"
+      autohide-in-fullscreen: "false"
+      background-opacity: "0.8"
+      custom-theme-shrink: "false"
+      dash-max-icon-size: "48"
+      dock-fixed: "false"
+      dock-position: "'BOTTOM'"
+      extend-height: "false"
+      height-fraction: "0.9"
+      hide-delay: "0.2"
+      intellihide: "true"
+      intellihide-mode: "'ALL_WINDOWS'"
+      pressure-threshold: "100.0"
+      require-pressure-to-show: "true"
+      show-delay: "0.25"
+      show-dock-urgent-notify: "false"
+      show-mounts-network: "false"
+  - uuid: gsconnect@andyholmes.github.io
+    apt: gnome-shell-extension-gsconnect
+  - uuid: AlphabeticalAppGrid@stuarthayhurst
+  - uuid: BingWallpaper@ineffable-gmail.com
+  - uuid: Bluetooth-Battery-Meter@maniacx.github.com
+  # Copyous needs libgda (with SQLite) and GSound.
+  - uuid: copyous@boerdereinar.dev
+    packages: [gir1.2-gda-5.0, gir1.2-gsound-1.0]
+  - uuid: quick-settings-audio-panel@rayzeq.github.io
+  # Monitor brightness over DDC, only useful with external monitors so laptops
+  # skip it. Slider in the system menu (0 is the top bar, 1 the system menu)
+  # and the display state check skipped.
+  - uuid: display-brightness-ddcutil@themightydeity.github.com
+    packages: [ddcutil]
+    desktop_only: true
+    dconf: /org/gnome/shell/extensions/display-brightness-ddcutil
+    settings:
+      button-location: "1"
+      disable-display-state-check: "true"
 
-# Extensions from extensions.gnome.org, installed for target_user.
-gnome_extensions_ego:
-  - AlphabeticalAppGrid@stuarthayhurst
-  - BingWallpaper@ineffable-gmail.com
-  - Bluetooth-Battery-Meter@maniacx.github.com
-  - copyous@boerdereinar.dev
-  - quick-settings-audio-panel@rayzeq.github.io
-
-# Monitor brightness over DDC, only useful with external monitors so laptops
-# skip it.
-gnome_extensions_ego_desktop_only:
-  - display-brightness-ddcutil@themightydeity.github.com
-
-# Copyous needs libgda (with SQLite) and GSound, unzip unpacks the
-# extensions.gnome.org downloads.
+# unzip unpacks the extensions.gnome.org downloads.
 gnome_extension_dependencies:
-  - gir1.2-gda-5.0
-  - gir1.2-gsound-1.0
   - unzip
 
 gnome_firewall_rules:
@@ -73,27 +106,3 @@ gnome_dconf:
     'page.kramo.Cartridges.desktop', 'com.obsproject.Studio.desktop', 'io.missioncenter.MissionCenter.desktop',
     'io.github.Qalculate.desktop', 'com.microsoft.VSCode.desktop', 'org.gnome.Software.desktop',
     'virt-manager.desktop', 'org.gnome.Terminal.desktop']
-  # Dash to Dock, without the monitor it is pinned to on aorus.
-  /org/gnome/shell/extensions/dash-to-dock/animation-time: "0.2"
-  /org/gnome/shell/extensions/dash-to-dock/apply-custom-theme: "false"
-  /org/gnome/shell/extensions/dash-to-dock/autohide: "true"
-  /org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen: "false"
-  /org/gnome/shell/extensions/dash-to-dock/background-opacity: "0.8"
-  /org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink: "false"
-  /org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size: "48"
-  /org/gnome/shell/extensions/dash-to-dock/dock-fixed: "false"
-  /org/gnome/shell/extensions/dash-to-dock/dock-position: "'BOTTOM'"
-  /org/gnome/shell/extensions/dash-to-dock/extend-height: "false"
-  /org/gnome/shell/extensions/dash-to-dock/height-fraction: "0.9"
-  /org/gnome/shell/extensions/dash-to-dock/hide-delay: "0.2"
-  /org/gnome/shell/extensions/dash-to-dock/intellihide: "true"
-  /org/gnome/shell/extensions/dash-to-dock/intellihide-mode: "'ALL_WINDOWS'"
-  /org/gnome/shell/extensions/dash-to-dock/pressure-threshold: "100.0"
-  /org/gnome/shell/extensions/dash-to-dock/require-pressure-to-show: "true"
-  /org/gnome/shell/extensions/dash-to-dock/show-delay: "0.25"
-  /org/gnome/shell/extensions/dash-to-dock/show-dock-urgent-notify: "false"
-  /org/gnome/shell/extensions/dash-to-dock/show-mounts-network: "false"
-  # Display Brightness, slider in the system menu (0 is the top bar, 1 the
-  # system menu) and the display state check skipped.
-  /org/gnome/shell/extensions/display-brightness-ddcutil/button-location: "1"
-  /org/gnome/shell/extensions/display-brightness-ddcutil/disable-display-state-check: "true"
