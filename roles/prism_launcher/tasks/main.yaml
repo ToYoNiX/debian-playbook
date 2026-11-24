@@ -1,0 +1,4 @@
+- name: Install Prism Launcher
+  community.general.flatpak:
+    name: "{{ prism_launcher_flatpak }}"
+    state: present

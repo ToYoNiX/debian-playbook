@@ -39,6 +39,22 @@
     value: "{{ item.value }}"
   loop: "{{ gnome_dconf | dict2items }}"
 
+# Same UPower check as the battery role: system batteries show up as
+# battery_*, while mice, headsets and UPSes get their own prefixes.
+- name: Check for a battery
+  ansible.builtin.shell: upower -e | grep '/battery_' || true
+  register: gnome_battery
+  changed_when: false
+  check_mode: false
+
+- name: Show the battery percentage
+  become: true
+  become_user: "{{ target_user }}"
+  community.general.dconf:
+    key: /org/gnome/desktop/interface/show-battery-percentage
+    value: "true"
+  when: gnome_battery.stdout | length > 0
+
 - name: Open GSConnect ports
   ansible.builtin.include_role:
     name: firewall

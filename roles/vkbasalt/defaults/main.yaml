@@ -1,0 +1,5 @@
+# vkBasalt must match the freedesktop version each app's runtime expects,
+# check each app's runtime with: flatpak info <app> | grep Runtime
+vkbasalt_branches:
+  - "25.08"  # Bottles (org.gnome.Platform 50)
+  - "26.08"  # Steam and Heroic (org.freedesktop.Platform 26.08)

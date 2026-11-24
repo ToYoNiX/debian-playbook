@@ -1,0 +1,4 @@
+- name: Install Protontricks
+  community.general.flatpak:
+    name: "{{ protontricks_flatpak }}"
+    state: present

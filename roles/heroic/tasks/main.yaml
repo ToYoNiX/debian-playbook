@@ -1,0 +1,4 @@
+- name: Install Heroic Games Launcher
+  community.general.flatpak:
+    name: "{{ heroic_flatpak }}"
+    state: present

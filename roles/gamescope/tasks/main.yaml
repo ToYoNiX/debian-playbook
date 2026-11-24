@@ -1,0 +1,17 @@
+# The flatpak module only matches on name, so with one branch installed it
+# would skip the others. Check each branch on its own instead.
+- name: Check installed gamescope branches
+  ansible.builtin.command: "flatpak info --system org.freedesktop.Platform.VulkanLayer.gamescope//{{ item }}"
+  loop: "{{ gamescope_branches }}"
+  register: gamescope_info
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
+- name: Install gamescope
+  ansible.builtin.command: "flatpak install --system --noninteractive -y flathub org.freedesktop.Platform.VulkanLayer.gamescope//{{ item.item }}"
+  loop: "{{ gamescope_info.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.rc != 0
+  changed_when: true

@@ -1,0 +1,4 @@
+- name: Install PCSX2
+  community.general.flatpak:
+    name: "{{ pcsx2_flatpak }}"
+    state: present
