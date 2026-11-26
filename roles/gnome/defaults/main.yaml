@@ -103,6 +103,6 @@ gnome_dconf:
     ['app.zen_browser.zen.desktop', 'com.bitwarden.desktop.desktop', 'org.gnome.Geary.desktop',
     'org.gnome.Calendar.desktop', 'io.github.mrvladus.List.desktop', 'org.gnome.TextEditor.desktop',
     'org.gnome.Nautilus.desktop', 'md.obsidian.Obsidian.desktop', 'com.github.flxzt.rnote.desktop',
-    'page.kramo.Cartridges.desktop', 'com.obsproject.Studio.desktop', 'io.missioncenter.MissionCenter.desktop',
+    'com.obsproject.Studio.desktop', 'io.missioncenter.MissionCenter.desktop',
     'io.github.Qalculate.desktop', 'com.microsoft.VSCode.desktop', 'org.gnome.Software.desktop',
     'virt-manager.desktop', 'org.gnome.Terminal.desktop']

@@ -7,7 +7,6 @@
   roles:
     - steam
     - bottles
-    - cartridges
     - heroic
     - prism_launcher
     - pcsx2

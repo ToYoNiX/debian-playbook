@@ -1,4 +1,0 @@
-- name: Install Cartridges
-  community.general.flatpak:
-    name: "{{ cartridges_flatpak }}"
-    state: present
